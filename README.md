@@ -145,6 +145,14 @@ Passenden Zugang dann in `lara/.env` eintragen (`DB_USERNAME=root`, `DB_PASSWORD
 
 ---
 
+## ☁️ Deployment (AWS)
+
+Eine vollständige Schritt-für-Schritt-Anleitung für das Deployment als Live-Demo auf AWS
+(EC2 + Nginx, optional RDS/S3/CloudFront) steht in **[DEPLOYMENT.md](DEPLOYMENT.md)** –
+inkl. Kosten-Hinweisen und Free-Tier-Tipps.
+
+---
+
 ## 📂 Projektstruktur
 
 ```
