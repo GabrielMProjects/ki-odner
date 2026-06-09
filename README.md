@@ -10,11 +10,17 @@ Ein E-Commerce-Projekt aus zwei Teilen: ein **Angular-18-Frontend** (`angel/`), 
 
 ## 📸 Screenshots
 
-| Startseite | Produktdetail |
-|---|---|
-| _(Screenshot hier einfügen)_ | _(Screenshot hier einfügen)_ |
+**Startseite**
 
-> Tipp: Lege Screenshots unter `docs/` ab und verlinke sie hier, z. B. `![Home](docs/home.png)`.
+![Startseite](docs/01-home.png)
+
+**Produktübersicht**
+
+![Produktübersicht](docs/02-products.png)
+
+**Produktdetail**
+
+![Produktdetail](docs/03-product-detail.png)
 
 ---
 
@@ -88,6 +94,27 @@ npm start
 ```
 
 Das Frontend erwartet, dass das Backend unter `http://localhost:8000` läuft.
+
+---
+
+## 🛍️ Demo-Daten (Beispielprodukte mit Bildern)
+
+Eine frische Installation ist leer. Für einen gefüllten Shop (wie in den Screenshots)
+gibt es zwei Wege:
+
+**A) Beim Installer mitnehmen:** Während `php artisan bagisto:install` bei der Frage nach
+Beispielprodukten `true` wählen.
+
+**B) Nachträglich seeden** (Beispielprodukte inkl. mitgelieferter Bilder), danach neu indexieren:
+
+```bash
+cd lara
+php artisan tinker --execute="app(\Webkul\Installer\Helpers\DatabaseManager::class)->seedSampleProducts(['default_locale'=>'en','allowed_locales'=>['en'],'default_currency'=>'USD','allowed_currencies'=>['USD']]);"
+php artisan indexer:index --mode=full
+```
+
+Danach zeigt das Frontend Produkte mit Bildern. Diese Demo-Produkte liegen nur in der
+Datenbank (nicht im Repository).
 
 ---
 
