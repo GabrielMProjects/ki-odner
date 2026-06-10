@@ -1,0 +1,30 @@
+# Beispiel-Variablenwerte.
+#
+# So benutzen:
+#   1) Diese Datei nach "terraform.tfvars" kopieren.
+#   2) Werte bei Bedarf anpassen.
+#
+# WICHTIG:
+# - "terraform.tfvars" wird NICHT eingecheckt (siehe .gitignore) und enthält
+#   niemals echte Secrets/Credentials. AWS-Zugangsdaten kommen aus der
+#   AWS-Credential-Kette, NICHT aus dieser Datei.
+# - Alle teuren Toggles bleiben standardmäßig false.
+
+aws_region   = "eu-central-1"
+project_name = "angel-lara"
+environment  = "demo"
+
+instance_type = "t3.micro"
+
+# Optionale, kostenträchtige Features – bewusst deaktiviert lassen,
+# solange du sie nicht wirklich brauchst:
+enable_rds           = false
+enable_elasticache   = false
+enable_cloudfront    = false
+enable_nat_gateway   = false
+enable_load_balancer = false
+
+# Beispiel für zusätzliche Tags:
+# additional_tags = {
+#   Owner = "dein-name"
+# }
