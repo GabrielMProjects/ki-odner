@@ -1,0 +1,20 @@
+groups:
+  - name: demo-alerts
+    rules:
+      - alert: TargetDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Target nicht erreichbar ({{ $labels.instance }})"
+          description: "Job {{ $labels.job }} / Instance {{ $labels.instance }} ist seit 1 Minute down."
+
+      - alert: HighProcessCpu
+        expr: rate(process_cpu_seconds_total[5m]) > 0.8
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Hohe CPU-Nutzung ({{ $labels.instance }})"
+          description: "Prozess-CPU über 80% seit 5 Minuten."
