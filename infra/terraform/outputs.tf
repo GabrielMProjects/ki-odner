@@ -67,3 +67,34 @@ output "enabled_nat_gateway" {
   description = "Ob das NAT Gateway aktiviert ist."
   value       = module.network.enabled_nat_gateway
 }
+
+# ─── Compute (aus dem compute-Modul) ─────────────────────────────────
+output "compute_instance_id" {
+  description = "ID der EC2-Instanz (null, wenn enable_compute = false)."
+  value       = module.compute.instance_id
+}
+
+output "compute_public_ip" {
+  description = "Öffentliche IP der EC2-Instanz (null, wenn deaktiviert)."
+  value       = module.compute.public_ip
+}
+
+output "compute_public_dns" {
+  description = "Öffentlicher DNS-Name der EC2-Instanz (null, wenn deaktiviert)."
+  value       = module.compute.public_dns
+}
+
+output "compute_security_group_id" {
+  description = "ID der k3s-Security-Group (null, wenn deaktiviert)."
+  value       = module.compute.security_group_id
+}
+
+output "compute_key_pair_name" {
+  description = "Name des AWS Key Pairs (null, wenn deaktiviert)."
+  value       = module.compute.key_pair_name
+}
+
+output "enabled_compute" {
+  description = "Ob das Compute-Modul aktiv ist."
+  value       = module.compute.enabled_compute
+}

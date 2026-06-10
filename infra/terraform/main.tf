@@ -18,6 +18,23 @@ module "network" {
   tags                 = local.common_tags
 }
 
+# Compute-Modul: kleine EC2-Instanz für k3s.
+# Erzeugt NUR etwas, wenn enable_compute = true (Standard: false) → standardmäßig keine Kosten.
+module "compute" {
+  source = "./modules/compute"
+
+  name_prefix          = local.name_prefix
+  enable_compute       = var.enable_compute
+  instance_type        = var.instance_type
+  vpc_id               = module.network.vpc_id
+  public_subnet_id     = module.network.public_subnet_ids[0]
+  allowed_ssh_cidr     = var.allowed_ssh_cidr
+  allowed_k8s_api_cidr = var.allowed_k8s_api_cidr
+  public_key           = var.public_key
+  ssh_public_key_path  = var.ssh_public_key_path
+  tags                 = local.common_tags
+}
+
 # Weitere Module (RDS, ALB ...) folgen in späteren Abschnitten und werden über die
 # jeweiligen enable_*-Toggles gesteuert, z. B.:
 #

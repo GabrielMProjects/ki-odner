@@ -63,9 +63,40 @@ variable "private_subnet_cidrs" {
   }
 }
 
+# ─── Compute-Zugriff (SSH / Kubernetes-API) ──────────────────────────
+variable "allowed_ssh_cidr" {
+  description = "CIDR mit SSH-Zugriff (Port 22). Demo-Default offen – später einschränken!"
+  type        = string
+  default     = "0.0.0.0/0"
+}
+
+variable "allowed_k8s_api_cidr" {
+  description = "CIDR mit Zugriff auf die Kubernetes-API (6443). Bewusst NICHT 0.0.0.0/0."
+  type        = string
+  default     = "10.20.0.0/16"
+}
+
+variable "public_key" {
+  description = "Öffentlicher SSH-Key als String (Alternative zu ssh_public_key_path). KEIN privater Key!"
+  type        = string
+  default     = ""
+}
+
+variable "ssh_public_key_path" {
+  description = "Pfad zu einer .pub-Datei (öffentlicher SSH-Key). Alternative zu public_key."
+  type        = string
+  default     = ""
+}
+
 # ─── Feature-Toggles ─────────────────────────────────────────────────
 # Alles potenziell Kostenträchtige ist standardmäßig AUS.
 # Erst durch bewusstes Setzen auf true (in terraform.tfvars) wird es aktiv.
+
+variable "enable_compute" {
+  description = "EC2-Instanz für k3s erstellen (kostet Geld bei apply)."
+  type        = bool
+  default     = false
+}
 
 variable "enable_rds" {
   description = "Verwaltete RDS-Datenbank aktivieren (kostet Geld)."
