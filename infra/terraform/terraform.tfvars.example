@@ -33,6 +33,7 @@ allowed_kubernetes_api_cidr = "10.20.0.0/16"
 # Optionale, kostenträchtige Features – bewusst deaktiviert lassen,
 # solange du sie nicht wirklich brauchst:
 enable_compute       = false
+enable_ecr           = false
 enable_rds           = false
 enable_elasticache   = false
 enable_cloudfront    = false

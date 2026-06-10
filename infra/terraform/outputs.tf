@@ -98,3 +98,14 @@ output "enabled_compute" {
   description = "Ob das Compute-Modul aktiv ist."
   value       = module.compute.enabled_compute
 }
+
+# ─── ECR (aus dem ecr-Modul) ─────────────────────────────────────────
+output "ecr_repository_urls" {
+  description = "Map: Repo-Kurzname -> ECR-URL (leer, wenn enable_ecr=false)."
+  value       = module.ecr.repository_urls
+}
+
+output "enabled_ecr" {
+  description = "Ob ECR aktiviert ist."
+  value       = module.ecr.enabled_ecr
+}

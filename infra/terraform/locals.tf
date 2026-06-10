@@ -17,6 +17,7 @@ locals {
   # Übersicht der aktiven Features (rein informativ, für Outputs).
   enabled_features = {
     compute       = var.enable_compute
+    ecr           = var.enable_ecr
     rds           = var.enable_rds
     elasticache   = var.enable_elasticache
     cloudfront    = var.enable_cloudfront

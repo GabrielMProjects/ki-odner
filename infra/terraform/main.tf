@@ -35,6 +35,16 @@ module "compute" {
   tags                        = local.common_tags
 }
 
+# ECR-Modul: Container-Registry für die App-Images.
+# Erzeugt NUR etwas, wenn enable_ecr = true (Standard: false) → standardmäßig keine Kosten.
+module "ecr" {
+  source = "./modules/ecr"
+
+  name_prefix = local.name_prefix
+  enable_ecr  = var.enable_ecr
+  tags        = local.common_tags
+}
+
 # Weitere Module (RDS, ALB ...) folgen in späteren Abschnitten und werden über die
 # jeweiligen enable_*-Toggles gesteuert, z. B.:
 #

@@ -1,0 +1,6 @@
+# Kopieren nach terraform.tfvars (wird NICHT committet) und anpassen.
+# Nur Platzhalter – KEINE echten Secrets nötig (S3/DynamoDB brauchen keine).
+
+aws_region        = "eu-central-1"
+state_bucket_name = "angel-lara-tfstate-DEINKUERZEL" # global eindeutig wählen!
+lock_table_name   = "angel-lara-tf-locks"

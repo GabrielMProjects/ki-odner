@@ -1,0 +1,21 @@
+# ─────────────────────────────────────────────────────────────────────
+# S3-Remote-Backend für den Terraform-State des HAUPTPROJEKTS.
+#
+# Standardmäßig INAKTIV (Dateiendung .example + alles auskommentiert), damit
+# `terraform init -backend=false` (lokal/CI) weiter funktioniert.
+#
+# Aktivieren – ERST nach dem Bootstrap (siehe bootstrap/README.md):
+#   1) Diese Datei nach "backend.tf" umbenennen.
+#   2) Den Block unten ENTKOMMENTIEREN und Werte aus dem Bootstrap-Output eintragen.
+#   3) `terraform init -migrate-state` ausführen.
+# ─────────────────────────────────────────────────────────────────────
+
+# terraform {
+#   backend "s3" {
+#     bucket         = "angel-lara-tfstate-DEINKUERZEL"   # aus bootstrap-Output
+#     key            = "angel-lara/terraform.tfstate"
+#     region         = "eu-central-1"
+#     dynamodb_table = "angel-lara-tf-locks"
+#     encrypt        = true
+#   }
+# }

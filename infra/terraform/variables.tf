@@ -98,6 +98,12 @@ variable "enable_compute" {
   default     = false
 }
 
+variable "enable_ecr" {
+  description = "ECR-Repositories (backend/frontend) erstellen. Leere Repos ~kostenlos."
+  type        = bool
+  default     = false
+}
+
 variable "enable_rds" {
   description = "Verwaltete RDS-Datenbank aktivieren (kostet Geld)."
   type        = bool
