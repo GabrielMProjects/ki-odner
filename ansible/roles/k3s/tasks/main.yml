@@ -1,0 +1,41 @@
+---
+# Rolle: k3s – leichtgewichtiges Kubernetes installieren und nutzbar machen.
+
+- name: k3s installieren (offizielles Installationsskript, idempotent über 'creates')
+  ansible.builtin.shell:
+    cmd: curl -sfL https://get.k3s.io | sh -
+  args:
+    creates: /usr/local/bin/k3s
+
+- name: k3s-Dienst aktivieren und starten
+  ansible.builtin.service:
+    name: k3s
+    state: started
+    enabled: true
+
+- name: .kube-Verzeichnis für den User anlegen
+  ansible.builtin.file:
+    path: "/home/{{ k3s_user | default('ubuntu') }}/.kube"
+    state: directory
+    owner: "{{ k3s_user | default('ubuntu') }}"
+    group: "{{ k3s_user | default('ubuntu') }}"
+    mode: "0700"
+
+- name: kubeconfig nach ~/.kube/config kopieren
+  ansible.builtin.copy:
+    src: /etc/rancher/k3s/k3s.yaml
+    dest: "/home/{{ k3s_user | default('ubuntu') }}/.kube/config"
+    remote_src: true
+    owner: "{{ k3s_user | default('ubuntu') }}"
+    group: "{{ k3s_user | default('ubuntu') }}"
+    mode: "0600"
+
+- name: kubectl-Funktion testen (Knoten auflisten)
+  ansible.builtin.command:
+    cmd: k3s kubectl get nodes
+  changed_when: false
+  register: k3s_nodes
+
+- name: Knoten-Ausgabe anzeigen
+  ansible.builtin.debug:
+    var: k3s_nodes.stdout_lines

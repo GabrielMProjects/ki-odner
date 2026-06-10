@@ -1,0 +1,24 @@
+---
+# Rolle: common – Basis-Einrichtung des Hosts.
+
+- name: apt-Cache aktualisieren
+  ansible.builtin.apt:
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Basis-Pakete installieren
+  ansible.builtin.apt:
+    name:
+      - curl
+      - wget
+      - git
+      - unzip
+      - ca-certificates
+      - gnupg
+      - lsb-release
+    state: present
+
+- name: Zeitzone setzen (optional, Standard Europe/Berlin)
+  community.general.timezone:
+    name: "{{ timezone | default('Europe/Berlin') }}"
+  when: set_timezone | default(false) | bool

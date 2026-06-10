@@ -1,0 +1,8 @@
+---
+# Nur k3s + Helm (z. B. wenn die Basis bereits eingerichtet ist).
+- name: Nur k3s und Helm installieren
+  hosts: k3s
+  become: true
+  roles:
+    - k3s
+    - helm

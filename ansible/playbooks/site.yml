@@ -1,0 +1,12 @@
+---
+# Vollständiges Provisioning eines Ubuntu-Hosts zum k3s-Node.
+# Reihenfolge bewusst: erst Basis + Firewall (SSH zuerst!), dann Container/Cluster.
+- name: k3s-Node vollständig provisionieren
+  hosts: k3s
+  become: true
+  roles:
+    - common
+    - security
+    - docker
+    - k3s
+    - helm

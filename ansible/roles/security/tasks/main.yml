@@ -1,0 +1,42 @@
+---
+# Rolle: security – einfache Host-Firewall mit UFW.
+#
+# ⚠️ WICHTIG: SSH (22) wird ZUERST erlaubt, BEVOR UFW aktiviert wird,
+# damit wir uns niemals selbst aussperren.
+
+- name: UFW installieren
+  ansible.builtin.apt:
+    name: ufw
+    state: present
+    update_cache: true
+
+- name: SSH (22) erlauben – MUSS vor der UFW-Aktivierung geschehen
+  community.general.ufw:
+    rule: allow
+    port: "22"
+    proto: tcp
+
+- name: HTTP (80) erlauben
+  community.general.ufw:
+    rule: allow
+    port: "80"
+    proto: tcp
+
+- name: HTTPS (443) erlauben
+  community.general.ufw:
+    rule: allow
+    port: "443"
+    proto: tcp
+
+- name: Kubernetes-API (6443) erlauben – nur optional, Standard aus
+  community.general.ufw:
+    rule: allow
+    port: "6443"
+    proto: tcp
+  when: ufw_allow_k8s_api | default(false) | bool
+
+- name: UFW aktivieren (eingehend standardmäßig verweigern)
+  community.general.ufw:
+    state: enabled
+    policy: deny
+    direction: incoming

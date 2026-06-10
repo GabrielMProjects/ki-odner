@@ -1,0 +1,21 @@
+---
+# Rolle: docker – Docker installieren und bereitstellen.
+# (k3s nutzt zwar containerd, Docker ist hier für Image-Builds/Tools vorhanden.)
+
+- name: Docker installieren (docker.io aus dem Ubuntu-Repo)
+  ansible.builtin.apt:
+    name: docker.io
+    state: present
+    update_cache: true
+
+- name: Docker-Dienst aktivieren und starten
+  ansible.builtin.service:
+    name: docker
+    state: started
+    enabled: true
+
+- name: User zur docker-Gruppe hinzufügen (kein sudo mehr für docker nötig)
+  ansible.builtin.user:
+    name: "{{ docker_user | default('ubuntu') }}"
+    groups: docker
+    append: true

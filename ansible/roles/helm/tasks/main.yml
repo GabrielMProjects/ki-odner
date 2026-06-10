@@ -1,0 +1,18 @@
+---
+# Rolle: helm – Helm (Kubernetes-Paketmanager) installieren.
+
+- name: Helm installieren (offizielles Skript, idempotent über 'creates')
+  ansible.builtin.shell:
+    cmd: curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+  args:
+    creates: /usr/local/bin/helm
+
+- name: Helm-Version prüfen
+  ansible.builtin.command:
+    cmd: helm version --short
+  changed_when: false
+  register: helm_version
+
+- name: Helm-Version anzeigen
+  ansible.builtin.debug:
+    var: helm_version.stdout
