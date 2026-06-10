@@ -70,7 +70,7 @@ variable "allowed_ssh_cidr" {
   default     = "0.0.0.0/0"
 }
 
-variable "allowed_k8s_api_cidr" {
+variable "allowed_kubernetes_api_cidr" {
   description = "CIDR mit Zugriff auf die Kubernetes-API (6443). Bewusst NICHT 0.0.0.0/0."
   type        = string
   default     = "10.20.0.0/16"

@@ -52,6 +52,9 @@ helm/**/charts/
 ansible/inventory.ini
 *.retry
 
+# ─── Security-Scan-Reports ───────────────────────────────────────────
+gitleaks-report.json
+
 # ─── OS / IDE ────────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db

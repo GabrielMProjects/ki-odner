@@ -1,0 +1,22 @@
+# gitleaks-Konfiguration
+#
+# Erweitert die Standard-Regelsätze und erlaubt AUSSCHLIESSLICH einen bestätigten
+# False Positive: eine Terraform-CIDR-Variable (KEIN Secret). Die Allowlist ist
+# bewusst eng gehalten und gibt KEINE generischen Secret-Muster frei.
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Bestätigter False Positive: Terraform-CIDR-Variable (kein Secret)"
+
+# Nur diese exakten Variablen-Referenzen werden ignoriert – nichts Breiteres.
+regexes = [
+  '''var\.allowed_k8s_api_cidr''',
+  '''var\.allowed_kubernetes_api_cidr''',
+]
+
+# gitleaks-eigene Report-Datei vom Scan ausnehmen (enthält gemeldete Strings).
+paths = [
+  '''gitleaks-report\.json''',
+]

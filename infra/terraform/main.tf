@@ -23,16 +23,16 @@ module "network" {
 module "compute" {
   source = "./modules/compute"
 
-  name_prefix          = local.name_prefix
-  enable_compute       = var.enable_compute
-  instance_type        = var.instance_type
-  vpc_id               = module.network.vpc_id
-  public_subnet_id     = module.network.public_subnet_ids[0]
-  allowed_ssh_cidr     = var.allowed_ssh_cidr
-  allowed_k8s_api_cidr = var.allowed_k8s_api_cidr
-  public_key           = var.public_key
-  ssh_public_key_path  = var.ssh_public_key_path
-  tags                 = local.common_tags
+  name_prefix                 = local.name_prefix
+  enable_compute              = var.enable_compute
+  instance_type               = var.instance_type
+  vpc_id                      = module.network.vpc_id
+  public_subnet_id            = module.network.public_subnet_ids[0]
+  allowed_ssh_cidr            = var.allowed_ssh_cidr
+  allowed_kubernetes_api_cidr = var.allowed_kubernetes_api_cidr
+  public_key                  = var.public_key
+  ssh_public_key_path         = var.ssh_public_key_path
+  tags                        = local.common_tags
 }
 
 # Weitere Module (RDS, ALB ...) folgen in späteren Abschnitten und werden über die

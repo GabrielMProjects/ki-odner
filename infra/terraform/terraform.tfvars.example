@@ -23,10 +23,10 @@ private_subnet_cidrs = ["10.20.10.0/24", "10.20.11.0/24"]
 
 # Compute-Zugriff (nur relevant, wenn enable_compute = true):
 #   - allowed_ssh_cidr für die Demo offen; für mehr als eine Wegwerf-Demo auf eigene IP einschränken.
-#   - allowed_k8s_api_cidr NICHT öffentlich machen.
+#   - allowed_kubernetes_api_cidr NICHT öffentlich machen.
 #   - Nur ÖFFENTLICHEN SSH-Key angeben, niemals den privaten!
 allowed_ssh_cidr     = "0.0.0.0/0"
-allowed_k8s_api_cidr = "10.20.0.0/16"
+allowed_kubernetes_api_cidr = "10.20.0.0/16"
 # public_key          = "ssh-ed25519 AAAA... dein-oeffentlicher-key"
 # ssh_public_key_path = "~/.ssh/id_ed25519.pub"
 

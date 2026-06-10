@@ -64,7 +64,7 @@ resource "aws_security_group" "k3s" {
     from_port   = 6443
     to_port     = 6443
     protocol    = "tcp"
-    cidr_blocks = [var.allowed_k8s_api_cidr]
+    cidr_blocks = [var.allowed_kubernetes_api_cidr]
   }
 
   egress {

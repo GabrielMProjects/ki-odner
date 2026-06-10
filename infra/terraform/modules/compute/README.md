@@ -11,7 +11,7 @@ Wiederverwendbares Modul für eine **kleine EC2-Instanz**, auf der später per *
   - SSH `22` – **nur** über `allowed_ssh_cidr`
   - HTTP `80` – öffentlich
   - HTTPS `443` – öffentlich
-  - Kubernetes-API `6443` – **NICHT öffentlich**, nur über `allowed_k8s_api_cidr`
+  - Kubernetes-API `6443` – **NICHT öffentlich**, nur über `allowed_kubernetes_api_cidr`
   - Egress: erlaubt
 - **AWS Key Pair** aus deinem **öffentlichen** SSH-Key (`public_key` ODER `ssh_public_key_path`).
 
@@ -42,7 +42,7 @@ die eigene IP einschränken, z. B. `allowed_ssh_cidr = "203.0.113.10/32"`.
 | `vpc_id` / `public_subnet_id` | – | aus dem Netzwerk-Modul |
 | `public_key` / `ssh_public_key_path` | `""` | öffentlicher SSH-Key |
 | `allowed_ssh_cidr` | `0.0.0.0/0` | SSH-Zugriff (Demo offen, einschränken!) |
-| `allowed_k8s_api_cidr` | `10.20.0.0/16` | k8s-API-Zugriff (nicht öffentlich) |
+| `allowed_kubernetes_api_cidr` | `10.20.0.0/16` | k8s-API-Zugriff (nicht öffentlich) |
 
 ## Outputs
 
