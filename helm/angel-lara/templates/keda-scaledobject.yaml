@@ -1,0 +1,24 @@
+{{- if .Values.keda.enabled }}
+# Benötigt einen installierten KEDA-Operator im Cluster (keda.sh).
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: {{ include "angel-lara.worker.fullname" . }}
+  labels:
+    {{- include "angel-lara.labels" . | nindent 4 }}
+    app.kubernetes.io/component: worker
+spec:
+  scaleTargetRef:
+    name: {{ include "angel-lara.worker.fullname" . }}
+  minReplicaCount: {{ .Values.keda.minReplicas }}
+  maxReplicaCount: {{ .Values.keda.maxReplicas }}
+  pollingInterval: {{ .Values.keda.pollingInterval }}
+  cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
+  triggers:
+    - type: prometheus
+      metadata:
+        serverAddress: {{ .Values.keda.prometheus.serverAddress | quote }}
+        metricName: {{ .Values.keda.prometheus.metricName | quote }}
+        query: {{ .Values.keda.prometheus.query | quote }}
+        threshold: {{ .Values.keda.prometheus.threshold | quote }}
+{{- end }}

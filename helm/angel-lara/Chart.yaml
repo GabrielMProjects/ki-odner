@@ -1,0 +1,13 @@
+apiVersion: v2
+name: angel-lara
+description: Helm-Chart für das angel-Frontend (Angular) und das lara-Backend (Bagisto/Laravel) auf k3s.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - angular
+  - laravel
+  - bagisto
+  - k3s
+maintainers:
+  - name: GabrielMProjects

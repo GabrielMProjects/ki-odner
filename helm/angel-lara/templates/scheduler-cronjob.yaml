@@ -1,0 +1,31 @@
+{{- if .Values.scheduler.enabled }}
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ include "angel-lara.fullname" . }}-scheduler
+  labels:
+    {{- include "angel-lara.labels" . | nindent 4 }}
+    app.kubernetes.io/component: scheduler
+spec:
+  schedule: {{ .Values.scheduler.schedule | quote }}
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        metadata:
+          labels:
+            {{- include "angel-lara.selectorLabels" . | nindent 12 }}
+            app.kubernetes.io/component: scheduler
+        spec:
+          restartPolicy: OnFailure
+          containers:
+            - name: scheduler
+              image: "{{ include "angel-lara.backend.image" . }}"
+              imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+              command:
+                {{- toYaml .Values.scheduler.command | nindent 16 }}
+              envFrom:
+                {{- include "angel-lara.envFrom" . | nindent 16 }}
+{{- end }}

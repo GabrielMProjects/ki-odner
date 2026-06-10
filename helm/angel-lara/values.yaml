@@ -1,0 +1,128 @@
+# Standardwerte für das angel-lara Chart.
+# Überschreibbar per --set oder -f custom-values.yaml.
+
+nameOverride: ""
+fullnameOverride: ""
+
+# ─── Frontend (Angular/Nginx) ────────────────────────────────────────
+frontend:
+  image:
+    repository: angel-lara/frontend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    port: 80
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 128Mi
+
+# ─── Backend (Laravel/Bagisto) ───────────────────────────────────────
+backend:
+  image:
+    repository: angel-lara/backend
+    tag: latest
+    pullPolicy: IfNotPresent
+  replicaCount: 1
+  service:
+    port: 8000
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+# ─── Queue Worker ────────────────────────────────────────────────────
+worker:
+  enabled: true
+  replicaCount: 1
+  command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+
+# ─── Scheduler (CronJob) ─────────────────────────────────────────────
+# Laravel empfiehlt eigentlich "jede Minute" (* * * * *), da der Scheduler intern
+# entscheidet, was fällig ist. Default hier sparsam auf alle 5 Minuten.
+scheduler:
+  enabled: true
+  schedule: "*/5 * * * *"
+  command: ["php", "artisan", "schedule:run"]
+
+# ─── Migrationen (Helm pre-install/pre-upgrade Hook) ─────────────────
+migrations:
+  enabled: false # Default AUS – bewusst aktivieren
+  command: ["php", "artisan", "migrate", "--force"]
+  backoffLimit: 3
+
+# ─── Nicht-sensible Konfiguration (→ ConfigMap) ──────────────────────
+config:
+  APP_ENV: "production"
+  APP_DEBUG: "false"
+  APP_URL: "http://angel-lara.local"
+  DB_CONNECTION: "mysql"
+  DB_HOST: "mysql"
+  DB_PORT: "3306"
+  DB_DATABASE: "bagisto"
+  REDIS_HOST: "redis"
+  REDIS_PORT: "6379"
+  REDIS_CLIENT: "predis"
+  QUEUE_CONNECTION: "redis"
+  CACHE_STORE: "redis"
+  FILESYSTEM_DISK: "local"
+
+# ─── Sensible Werte (→ Secret) – NUR PLATZHALTER, keine echten Secrets! ──
+# APP_KEY NICHT echt setzen. Real per --set-file / externes Secret / Sealed Secret.
+secrets:
+  APP_KEY: "" # leer lassen – echten Key niemals committen
+  DB_USERNAME: "bagisto"
+  DB_PASSWORD: "change-me"
+  REDIS_PASSWORD: ""
+  # Für späteres externes RDS/Redis/S3 vorbereitet:
+  AWS_ACCESS_KEY_ID: ""
+  AWS_SECRET_ACCESS_KEY: ""
+  AWS_DEFAULT_REGION: ""
+  AWS_BUCKET: ""
+
+# ─── Ingress (k3s/Traefik) ───────────────────────────────────────────
+ingress:
+  enabled: false
+  className: "traefik"
+  host: "angel-lara.local"
+  annotations: {}
+  tls:
+    enabled: false
+    secretName: "angel-lara-tls"
+  certManager:
+    enabled: false
+    clusterIssuer: "letsencrypt-prod"
+
+# ─── HPA (CPU-basiert) ───────────────────────────────────────────────
+autoscaling:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 5
+  targetCPUUtilizationPercentage: 70
+
+# ─── KEDA (ereignisbasiert, Prometheus-Scaler) ──────────────────────
+keda:
+  enabled: false
+  minReplicas: 1
+  maxReplicas: 10
+  pollingInterval: 30
+  cooldownPeriod: 300
+  prometheus:
+    serverAddress: "http://prometheus-server.observability.svc.cluster.local"
+    metricName: "laravel_queue_length"
+    query: "sum(laravel_queue_size)"
+    threshold: "100"
