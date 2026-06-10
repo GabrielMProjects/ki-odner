@@ -8,6 +8,47 @@ Ein E-Commerce-Projekt aus zwei Teilen: ein **Angular-18-Frontend** (`angel/`), 
 
 ---
 
+## 🎯 Projektziel
+
+Dieses Repository zeigt den **gesamten Weg von der laufenden Anwendung bis zum Cloud-Deployment**:
+
+1. Eine funktionierende E-Commerce-App (Angular-Frontend + Bagisto/Laravel-Backend).
+2. Eine **produktionsnahe DevOps-/Infrastruktur-Schicht** rundherum – Infrastructure as Code,
+   Konfigurationsmanagement, Kubernetes, Observability und CI/CD.
+
+Ziel ist, **nicht nur App-Entwicklung**, sondern auch **Infrastruktur- und Deployment-Kompetenz**
+nachvollziehbar zu demonstrieren – mit Fokus auf *sicher, kostenbewusst und reproduzierbar*.
+
+## 🏗️ Architekturüberblick
+
+```
+App-Schicht        angel (Angular 18)  ──HTTP──►  lara (Bagisto/Laravel REST-API)  ──►  MySQL
+                          │
+Infra-Schicht      infra/terraform   →  AWS Infrastruktur als Code (nur Dateien, kein Auto-Apply)
+(dieses Repo)      ansible           →  Server-Provisioning (PHP, Nginx, DB, App)
+                   helm/angel-lara   →  Kubernetes-Deployment (optional)
+                   observability     →  Monitoring/Logging (Prometheus/Grafana)
+                   .github/workflows →  CI/CD (Lint, Build, Test, terraform plan)
+                   scripts           →  Helfer inkl. destroy.sh (Aufräumen)
+```
+
+**Leitplanken:**
+- **Erst lokal testbar**, dann optional in die Cloud.
+- AWS-Ressourcen werden **nie automatisch** erstellt – `terraform apply` machst du bewusst selbst.
+- Optionale/kostenträchtige Module sind **standardmäßig aus**: `enable_rds`, `enable_elasticache`,
+  `enable_cloudfront`, `enable_nat_gateway`, `enable_load_balancer` = `false`.
+- Für die echte Demo nur **kleine Instanzen** (`t3.micro`/`t3.small`).
+
+## 💶 Kostenhinweis
+
+- **Lokale Entwicklung ist kostenlos.**
+- Ein AWS-Deployment ist **optional** und kommt später; dann nur kleine/Free-Tier-Instanzen.
+- **Nichts** wird automatisch provisioniert – du behältst die Kontrolle über jeden kostenpflichtigen Schritt.
+- `scripts/destroy.sh` entfernt nach der Demo **alle** erstellten Ressourcen wieder.
+- Empfohlen: vorab einen **Budget-Alarm** in AWS einrichten (siehe [DEPLOYMENT.md](DEPLOYMENT.md)).
+
+---
+
 ## 📸 Screenshots
 
 **Startseite**

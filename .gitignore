@@ -1,0 +1,55 @@
+# ─── Secrets & Umgebung (NIEMALS committen) ───────────────────────────
+.env
+.env.*
+!.env.example
+!.env.*.example
+*.pem
+*.key
+*.ppk
+*_rsa
+*_rsa.pub
+*.crt
+*.p12
+*.pfx
+secrets.*
+credentials
+.aws/
+*.tfvars
+!*.tfvars.example
+
+# ─── Terraform ────────────────────────────────────────────────────────
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+override.tf
+override.tf.json
+.terraform.lock.hcl
+
+# ─── Node / Angular (Frontend) ───────────────────────────────────────
+node_modules/
+angel/dist/
+**/dist/
+.angular/
+
+# ─── PHP / Laravel (Backend) ─────────────────────────────────────────
+vendor/
+lara/public/build/
+lara/public/storage
+lara/public/hot
+
+# ─── Build-Artefakte & Caches ────────────────────────────────────────
+*.log
+.cache/
+tmp/
+*.tmp
+
+# ─── Kubernetes / Helm ───────────────────────────────────────────────
+helm/**/charts/
+*.tgz
+
+# ─── OS / IDE ────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
