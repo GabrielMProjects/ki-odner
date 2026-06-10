@@ -1,0 +1,57 @@
+name: Docker Build
+
+# Prüft, dass beide Images bauen. KEIN Push, KEINE Registry-Secrets.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "angel/**"
+      - "lara/**"
+      - "angel/Dockerfile"
+      - "lara/Dockerfile"
+      - "docker-compose.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "angel/**"
+      - "lara/**"
+      - "angel/Dockerfile"
+      - "lara/Dockerfile"
+      - "docker-compose.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build-frontend:
+    name: Build angel-Image (kein Push)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./angel
+          push: false
+          tags: angel-lara/frontend:ci
+
+  build-backend:
+    name: Build lara-Image (kein Push)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build backend
+        uses: docker/build-push-action@v6
+        with:
+          context: ./lara
+          push: false
+          tags: angel-lara/backend:ci

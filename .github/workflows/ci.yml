@@ -1,0 +1,82 @@
+name: CI
+
+# Prüft Qualität von Frontend, Backend und Helm-Chart.
+# Reine Validierung – KEIN Deploy, KEINE Secrets.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  frontend:
+    name: Angular (install + build)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: angel
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies (ci, sonst install)
+        run: npm ci --legacy-peer-deps || npm install --legacy-peer-deps
+
+      - name: Build (nur falls build-Script vorhanden)
+        run: npm run build --if-present
+
+  backend:
+    name: Laravel/Bagisto (checks)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: lara
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: "8.2"
+          extensions: intl, mbstring, pdo_mysql, gd, zip, bcmath, exif, calendar, tokenizer, curl
+          tools: composer
+
+      - name: Prepare .env (Demo, kein Secret)
+        run: cp .env.example .env
+
+      - name: Composer install
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: App-Key generieren
+        run: php artisan key:generate
+
+      - name: PHP-Syntax-Check (php -l)
+        run: |
+          find app routes config database -type f -name "*.php" -print0 \
+            | xargs -0 -n1 -P4 php -l
+
+      - name: Artisan erreichbar?
+        run: php artisan --version
+
+  helm:
+    name: Helm (lint + template)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: helm lint
+        run: helm lint helm/angel-lara
+
+      - name: helm template (Render-Test)
+        run: helm template angel-lara helm/angel-lara > /dev/null
