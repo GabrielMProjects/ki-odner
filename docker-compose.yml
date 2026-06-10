@@ -1,0 +1,75 @@
+name: angel-lara
+
+# Lokaler Demo-Stack. KEINE echten Secrets – nur Demo-Werte.
+# Hinweis: lara/.env muss lokal existieren (siehe docs/docker.md).
+
+services:
+  frontend:
+    build:
+      context: ./angel
+    image: angel-lara/frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./lara
+    image: angel-lara/backend
+    ports:
+      - "8000:8000"
+    # .env lokal erstellen; fehlt sie, startet der Stack trotzdem (required: false).
+    env_file:
+      - path: ./lara/.env
+        required: false
+    # Verbindung zu mysql/redis über Service-Namen (überschreibt .env-Werte):
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: bagisto
+      DB_USERNAME: bagisto
+      DB_PASSWORD: secret
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_CLIENT: predis
+    depends_on:
+      - mysql
+      - redis
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_DATABASE: bagisto
+      MYSQL_USER: bagisto
+      MYSQL_PASSWORD: secret
+      MYSQL_ROOT_PASSWORD: secret
+    volumes:
+      - mysql-data:/var/lib/mysql
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+    restart: unless-stopped
+
+volumes:
+  mysql-data:
+
+networks:
+  app-network:
+    driver: bridge
