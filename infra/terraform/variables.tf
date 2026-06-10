@@ -34,6 +34,35 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+# ─── Netzwerk ────────────────────────────────────────────────────────
+variable "vpc_cidr" {
+  description = "CIDR-Block der VPC."
+  type        = string
+  default     = "10.20.0.0/16"
+}
+
+variable "public_subnet_cidrs" {
+  description = "CIDR-Blöcke der öffentlichen Subnetze (mindestens 2)."
+  type        = list(string)
+  default     = ["10.20.0.0/24", "10.20.1.0/24"]
+
+  validation {
+    condition     = length(var.public_subnet_cidrs) >= 2
+    error_message = "Es müssen mindestens 2 Public-Subnet-CIDRs angegeben werden."
+  }
+}
+
+variable "private_subnet_cidrs" {
+  description = "CIDR-Blöcke der privaten Subnetze (mindestens 2)."
+  type        = list(string)
+  default     = ["10.20.10.0/24", "10.20.11.0/24"]
+
+  validation {
+    condition     = length(var.private_subnet_cidrs) >= 2
+    error_message = "Es müssen mindestens 2 Private-Subnet-CIDRs angegeben werden."
+  }
+}
+
 # ─── Feature-Toggles ─────────────────────────────────────────────────
 # Alles potenziell Kostenträchtige ist standardmäßig AUS.
 # Erst durch bewusstes Setzen auf true (in terraform.tfvars) wird es aktiv.

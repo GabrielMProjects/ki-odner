@@ -1,22 +1,28 @@
 # Haupt-Einstiegspunkt.
 #
-# In diesem Abschnitt (Grundgerüst) werden BEWUSST noch KEINE Ressourcen erstellt.
-# `terraform plan` zeigt daher "No changes." – das ist Absicht und sicher.
+# Bindet das Netzwerk-Modul ein. VPC, Subnetze, IGW und Route Tables sind kostenlos;
+# das einzige kostenpflichtige Element (NAT Gateway) bleibt über enable_nat_gateway
+# standardmäßig DEAKTIVIERT.
 #
-# Spätere Ressourcen/Module werden hier eingebunden und über die Feature-Toggles
-# aus variables.tf gesteuert. Muster (count-Toggle), nur als Beispiel auskommentiert:
+# Hinweis: `terraform plan` zeigt jetzt die zu erstellenden Netzwerk-Ressourcen als
+# Vorschau an – es wird aber NICHTS erstellt, solange du nicht bewusst `apply` ausführst.
+
+module "network" {
+  source = "./modules/network"
+
+  name_prefix          = local.name_prefix
+  vpc_cidr             = var.vpc_cidr
+  public_subnet_cidrs  = var.public_subnet_cidrs
+  private_subnet_cidrs = var.private_subnet_cidrs
+  enable_nat_gateway   = var.enable_nat_gateway
+  tags                 = local.common_tags
+}
+
+# Weitere Module (RDS, ALB ...) folgen in späteren Abschnitten und werden über die
+# jeweiligen enable_*-Toggles gesteuert, z. B.:
 #
 # module "rds" {
 #   source = "./modules/rds"
 #   count  = var.enable_rds ? 1 : 0
 #   ...
 # }
-#
-# module "load_balancer" {
-#   source = "./modules/alb"
-#   count  = var.enable_load_balancer ? 1 : 0
-#   ...
-# }
-#
-# So bleibt alles Teure standardmäßig aus und wird nur bei bewusstem
-# Setzen des jeweiligen Toggles auf true erzeugt.

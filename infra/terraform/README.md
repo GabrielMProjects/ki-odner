@@ -2,8 +2,10 @@
 
 Terraform-Grundgerüst für die (spätere, optionale) AWS-Demo von **angel-lara**.
 
-In diesem Abschnitt werden **bewusst noch keine Ressourcen** definiert – nur Provider,
-Variablen, Toggles, Namen/Tags und Outputs. `terraform plan` zeigt daher „No changes."
+Stand: Provider, Variablen, Toggles, Namen/Tags, Outputs **und ein Netzwerk-Modul**
+(VPC + Subnetze + Routing). `terraform plan` zeigt jetzt die zu erstellenden Netzwerk-
+Ressourcen als **Vorschau** an – es wird aber **nichts** erstellt, solange du nicht bewusst
+`apply` ausführst. Das einzige kostenpflichtige Element (NAT Gateway) ist standardmäßig **aus**.
 
 ---
 
@@ -15,9 +17,10 @@ Variablen, Toggles, Namen/Tags und Outputs. `terraform plan` zeigt daher „No c
 | `providers.tf` | AWS-Provider mit Region + automatischen `default_tags`. Keine Credentials im Code. |
 | `variables.tf` | Eingabevariablen inkl. aller `enable_*`-Toggles (Default `false`). |
 | `locals.tf` | Abgeleitete Werte: `name_prefix`, gemeinsame Tags, Feature-Übersicht. |
-| `main.tf` | Einstiegspunkt – aktuell nur Kommentare/Muster, **keine** Ressourcen. |
-| `outputs.tf` | Outputs (Projekt, Env, Region, Präfix, aktive Features). |
-| `terraform.tfvars.example` | Beispielwerte. Kopieren nach `terraform.tfvars` (wird **nicht** committet). |
+| `main.tf` | Einstiegspunkt – bindet das **Netzwerk-Modul** ein (weitere Module folgen, toggle-gesteuert). |
+| `outputs.tf` | Outputs (Projekt, Env, Region, Präfix, aktive Features **+ Netzwerk-IDs**). |
+| `terraform.tfvars.example` | Beispielwerte inkl. Netzwerk-CIDRs. Kopieren nach `terraform.tfvars` (wird **nicht** committet). |
+| `modules/network/` | Wiederverwendbares Netzwerk-Modul: VPC, Subnetze, IGW, Route Tables, optionales NAT Gateway (eigene README). |
 
 ---
 
