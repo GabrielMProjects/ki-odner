@@ -1,6 +1,8 @@
 # Lokaler Kubernetes-Nachweis (kind + Helm)
 
-**Datum:** 2026-06-10
+**Datum:** 2026-06-10 (erstellt) · **2026-06-12 re-verifiziert** auf frischem kind-Cluster
+(kind v0.32.0 / Kubernetes v1.36.1, Helm v4.1.4 — identisches Ergebnis: alle Pods `Running`,
+Frontend/API/Admin je **HTTP 200**, Scheduler-CronJob `Completed`).
 **Umgebung:** rein **lokal** – **kein AWS**, keine Cloud-Ressourcen, **keine Kosten**.
 Alle Secrets sind **Demo-Werte** (lokal generiert, nicht committet).
 
