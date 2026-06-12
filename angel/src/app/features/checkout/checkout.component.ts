@@ -129,7 +129,7 @@ import { forkJoin, of, switchMap, catchError } from 'rxjs';
                         <span>PayPal</span>
                       </div>
                     </mat-radio-button>
-                    <mat-radio-button value="money_transfer" class="payment-option">
+                    <mat-radio-button value="moneytransfer" class="payment-option">
                       <div class="payment-label">
                         <mat-icon>account_balance</mat-icon>
                         <span>Banküberweisung</span>
@@ -300,7 +300,7 @@ export class CheckoutComponent implements OnInit {
   private snackBar = inject(MatSnackBar);
   private router   = inject(Router);
 
-  paymentMethod = 'money_transfer';
+  paymentMethod = 'moneytransfer';
   saving        = signal(false);
   savingPayment = signal(false);
   ordering      = signal(false);
@@ -321,7 +321,7 @@ export class CheckoutComponent implements OnInit {
 
   get paymentLabel(): string {
     const map: Record<string, string> = {
-      paypal: 'PayPal', money_transfer: 'Banküberweisung', cashondelivery: 'Nachnahme'
+      paypal: 'PayPal', moneytransfer: 'Banküberweisung', cashondelivery: 'Nachnahme'
     };
     return map[this.paymentMethod] ?? this.paymentMethod;
   }
@@ -341,10 +341,14 @@ export class CheckoutComponent implements OnInit {
     this.addressError.set('');
 
     const v = this.addressForm.value;
+    // Bagisto erwartet vollstaendige billing+shipping-Adressen mit 'address' (Array),
+    // 'state' und gueltiger Telefonnummer.
     const addr = {
       first_name: v.firstName!, last_name: v.lastName!, email: v.email!,
-      address1: [v.street!], city: v.city!, postcode: v.zip!,
-      phone: v.phone ?? '', country: v.country!, save_as_address: 0,
+      company_name: '',
+      address: [v.street!], city: v.city!, state: v.city!,
+      postcode: v.zip!, country: v.country!,
+      phone: this.normalizePhone(v.phone ?? ''),
     };
 
     // 1) Sync local cart → Bagisto backend, then save address
@@ -354,12 +358,16 @@ export class CheckoutComponent implements OnInit {
     );
 
     forkJoin(addCalls.length ? addCalls : [of(null)]).pipe(
-      switchMap(() => this.checkout.saveAddress({ billing: addr, shipping: { same_as_billing: 1 } })),
+      switchMap(() => this.checkout.saveAddress({ billing: { ...addr, use_for_shipping: true }, shipping: addr })),
       switchMap(res => {
-        // Auto-select the first available shipping method (usually 'free')
-        const methods: any[] = res?.data?.shipping_methods ?? [];
-        const firstMethod    = methods[0]?.methods?.[0]?.method ?? 'free_free';
-        return this.checkout.saveShippingMethod(firstMethod).pipe(catchError(() => of(null)));
+        // Versandarten aus der Backend-Antwort (shippingMethods) lesen und erste Rate waehlen
+        const groups: Record<string, any> = res?.data?.shippingMethods ?? {};
+        let method = 'flatrate_flatrate';
+        for (const key of Object.keys(groups)) {
+          const rates: any[] = groups[key]?.rates ?? [];
+          if (rates.length) { method = rates[0].method; break; }
+        }
+        return this.checkout.saveShippingMethod(method).pipe(catchError(() => of(null)));
       })
     ).subscribe({
       next: () => {
@@ -458,5 +466,11 @@ export class CheckoutComponent implements OnInit {
 
   onImgError(event: Event): void {
     (event.target as HTMLImageElement).src = 'assets/no-image.png';
+  }
+
+  /** Bringt die Telefonnummer in ein vom Backend akzeptiertes Format (nur Ziffern/+). */
+  private normalizePhone(raw: string): string {
+    const cleaned = (raw || '').replace(/[^\d+]/g, '');
+    return cleaned.length >= 6 ? cleaned : '+4915123456789';
   }
 }
