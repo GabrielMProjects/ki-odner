@@ -1,0 +1,79 @@
+# kube-prometheus-stack – schlanke LOKALE Demo (kind).
+# Keine Persistence (emptyDir), kurze Retention, kleine Requests.
+# Grafana-Admin-Passwort wird NICHT hier gesetzt -> per --set zur Laufzeit (kein Secret im Repo).
+fullnameOverride: kps
+
+# ── Prometheus ───────────────────────────────────────────────────────
+prometheus:
+  prometheusSpec:
+    retention: 6h
+    # ServiceMonitors/PodMonitors/Rules auch ausserhalb dieses Release einsammeln
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    probeSelectorNilUsesHelmValues: false
+    resources:
+      requests:
+        cpu: 100m
+        memory: 400Mi
+      limits:
+        memory: 800Mi
+    # kein storageSpec -> emptyDir (keine PVC, kein Host-Volume)
+
+# ── Alertmanager ─────────────────────────────────────────────────────
+alertmanager:
+  alertmanagerSpec:
+    retention: 2h
+    resources:
+      requests:
+        cpu: 10m
+        memory: 64Mi
+      limits:
+        memory: 128Mi
+    # kein storage -> emptyDir
+
+# ── Grafana ──────────────────────────────────────────────────────────
+grafana:
+  persistence:
+    enabled: false
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  # Prometheus-Datasource kommt automatisch; Loki + Tempo zusaetzlich:
+  additionalDataSources:
+    - name: Loki
+      type: loki
+      access: proxy
+      url: http://loki.observability.svc.cluster.local:3100
+    - name: Tempo
+      type: tempo
+      access: proxy
+      url: http://tempo.observability.svc.cluster.local:3200
+
+# ── kleinere Footprints der Hilfskomponenten ─────────────────────────
+kube-state-metrics:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 64Mi
+    limits:
+      memory: 128Mi
+
+prometheus-node-exporter:
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      memory: 64Mi
+
+prometheusOperator:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi

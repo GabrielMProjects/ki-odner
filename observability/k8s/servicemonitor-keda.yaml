@@ -1,0 +1,21 @@
+# ServiceMonitor: lässt Prometheus die nativen KEDA-Metriken scrapen.
+# Endpoint: keda-operator-metrics-apiserver:8080/metrics (im Namespace 'keda').
+# Wird von Prometheus erfasst (serviceMonitorSelectorNilUsesHelmValues=false).
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: keda-operator
+  namespace: observability
+  labels:
+    release: kps
+spec:
+  namespaceSelector:
+    matchNames:
+      - keda
+  selector:
+    matchLabels:
+      app: keda-operator-metrics-apiserver
+  endpoints:
+    - port: metrics
+      path: /metrics
+      interval: 30s

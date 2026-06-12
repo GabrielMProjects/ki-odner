@@ -1,0 +1,62 @@
+# open-telemetry/opentelemetry-collector – OTLP-Gateway (lokale Demo).
+# Image auf contrib 0.96.0 gepinnt (bereits lokal gecached -> kein erneuter Pull).
+mode: deployment
+image:
+  repository: otel/opentelemetry-collector-contrib
+  tag: "0.96.0"
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    memory: 256Mi
+
+# Interne Collector-Metriken (8888) fuer Prometheus sichtbar machen
+ports:
+  metrics:
+    enabled: true
+
+# Prometheus soll die Collector-Metriken scrapen
+serviceMonitor:
+  enabled: true
+
+# Vollstaendige Pipeline-Konfiguration (ersetzt die Chart-Defaults)
+config:
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+  processors:
+    batch: {}
+  exporters:
+    otlp/tempo:
+      endpoint: tempo.observability.svc.cluster.local:4317
+      tls:
+        insecure: true
+    otlphttp/loki:
+      endpoint: http://loki.observability.svc.cluster.local:3100/otlp
+    prometheus:
+      endpoint: 0.0.0.0:8889
+    debug:
+      verbosity: basic
+  service:
+    telemetry:
+      metrics:
+        address: 0.0.0.0:8888
+    pipelines:
+      traces:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [otlp/tempo]
+      metrics:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [prometheus]
+      logs:
+        receivers: [otlp]
+        processors: [batch]
+        exporters: [otlphttp/loki]

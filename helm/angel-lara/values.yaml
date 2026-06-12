@@ -212,9 +212,9 @@ keda:
     # Servicenamen 'redis' nicht aufloesen. <service>.<namespace>.svc.cluster.local
     address: "redis.angel-lara.svc.cluster.local:6379"
     # WICHTIG: muss dem ECHTEN Redis-Key der Laravel-Queue entsprechen.
-    # Laravel praefixt Queue-Keys oft (z. B. "<app>_database_queues:default").
-    # Beim Deploy verifizieren:  redis-cli KEYS '*queues*'
-    listName: "queues:default"
+    # Laravel praefixt Queue-Keys (Default-Prefix "laravel_database_").
+    # Verifiziert in diesem Setup via:  redis-cli KEYS '*queues*'
+    listName: "laravel_database_queues:default"
     listLength: "5"                # Ziel: ~5 wartende Jobs pro Worker-Replica
     databaseIndex: "0"
     enableTLS: "false"

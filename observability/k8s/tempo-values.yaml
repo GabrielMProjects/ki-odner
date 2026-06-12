@@ -1,0 +1,34 @@
+# grafana/tempo – SingleBinary, lokale Demo.
+# Image auf 2.3.1 gepinnt (bereits lokal gecached -> kein erneuter Pull).
+# Keine Persistence; OTLP-Receiver (gRPC 4317 / HTTP 4318) aktiv.
+tempo:
+  repository: grafana/tempo
+  tag: "2.3.1"
+  retention: 1h
+  receivers:
+    otlp:
+      protocols:
+        grpc:
+          endpoint: 0.0.0.0:4317
+        http:
+          endpoint: 0.0.0.0:4318
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  # Container-Mount gehoert unter tempo.* (Chart-Struktur), das Volume top-level.
+  extraVolumeMounts:
+    - name: tempo-data
+      mountPath: /var/tempo
+
+persistence:
+  enabled: false
+
+# Daten-Pfad /var/tempo ist ohne Persistence nicht beschreibbar -> emptyDir mounten.
+extraVolumes:
+  - name: tempo-data
+    emptyDir: {}
+
+# Tempo schreibt Traces lokal in emptyDir (Wegwerf-Demo)
