@@ -26,6 +26,16 @@ output "key_pair_name" {
   value       = try(aws_key_pair.this[0].key_name, null)
 }
 
+output "iam_role_name" {
+  description = "Name der EC2-IAM-Rolle für ECR-Pull (null, wenn deaktiviert)."
+  value       = try(aws_iam_role.ec2[0].name, null)
+}
+
+output "iam_instance_profile_name" {
+  description = "Name des Instance-Profiles (null, wenn deaktiviert)."
+  value       = try(aws_iam_instance_profile.ec2[0].name, null)
+}
+
 output "enabled_compute" {
   description = "Ob das Compute-Modul aktiv ist."
   value       = var.enable_compute

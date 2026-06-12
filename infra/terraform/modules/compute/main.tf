@@ -91,6 +91,42 @@ resource "aws_key_pair" "this" {
   })
 }
 
+# ─── IAM-Rolle + Instance-Profile (nur ECR-Pull) ─────────────────────
+# Best Practice: die EC2 zieht Images via Rolle – KEINE Access Keys auf der Instanz.
+# Alle IAM-Ressourcen sind kostenlos.
+data "aws_iam_policy_document" "ec2_assume" {
+  count = var.enable_compute ? 1 : 0
+
+  statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ec2.amazonaws.com"]
+    }
+  }
+}
+
+resource "aws_iam_role" "ec2" {
+  count              = var.enable_compute ? 1 : 0
+  name               = "${var.name_prefix}-ec2-role"
+  assume_role_policy = data.aws_iam_policy_document.ec2_assume[0].json
+  tags               = var.tags
+}
+
+# Nur Lesezugriff auf ECR (Images ziehen) – minimaler Scope.
+resource "aws_iam_role_policy_attachment" "ecr_readonly" {
+  count      = var.enable_compute ? 1 : 0
+  role       = aws_iam_role.ec2[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_instance_profile" "ec2" {
+  count = var.enable_compute ? 1 : 0
+  name  = "${var.name_prefix}-ec2-profile"
+  role  = aws_iam_role.ec2[0].name
+  tags  = var.tags
+}
+
 # ─── EC2-Instanz für k3s ─────────────────────────────────────────────
 resource "aws_instance" "k3s" {
   count                       = var.enable_compute ? 1 : 0
@@ -100,6 +136,7 @@ resource "aws_instance" "k3s" {
   associate_public_ip_address = true
   vpc_security_group_ids      = [aws_security_group.k3s[0].id]
   key_name                    = aws_key_pair.this[0].key_name
+  iam_instance_profile        = aws_iam_instance_profile.ec2[0].name
 
   root_block_device {
     volume_size = var.root_volume_size

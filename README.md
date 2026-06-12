@@ -4,6 +4,14 @@
 [![IaC](https://img.shields.io/badge/IaC-Terraform-7B42BC?logo=terraform&logoColor=white)](infra/terraform)
 [![Kubernetes](https://img.shields.io/badge/Deploy-Helm_/_k3s-326CE5?logo=kubernetes&logoColor=white)](helm/angel-lara)
 
+## 🚀 Live-Demo
+
+[![LaraShop Live-Demo](docs/demo.gif)](http://3.75.228.58/)
+
+**▶️ Live ausprobieren:** http://3.75.228.58/
+
+> **AWS Live-Demo** · EC2 · ECR · IAM Role · Docker Compose · isolierte Demo-Datenbank
+
 ## Projektübersicht
 
 **LaraShop** ist ein vollständiges E-Commerce-Projekt **plus** die komplette DevOps-Schicht
