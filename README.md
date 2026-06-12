@@ -12,6 +12,18 @@
 
 > **AWS Live-Demo** · EC2 · ECR · IAM Role · Docker Compose · isolierte Demo-Datenbank
 
+## 📋 Nachweise / Proofs
+
+| Nachweis | Link | Umgebung |
+|---|---|---|
+| **Live-Demo + GIF** | [▶️ http://3.75.228.58/](http://3.75.228.58/) · [Demo-GIF](docs/demo.gif) | AWS (EC2 · ECR · IAM Role · Docker Compose) |
+| **Kubernetes / Helm Proof** | [docs/k8s-proof.md](docs/k8s-proof.md) | lokal (kind) |
+| **Observability Proof** | [docs/observability-proof.md](docs/observability-proof.md) | lokal (Docker Compose) |
+| **Architektur** | [docs/architecture.md](docs/architecture.md) | – |
+
+- 🟢 **AWS Live-Demo:** läuft aktuell auf **EC2 + ECR + IAM Role + Docker Compose** (isolierte Demo-Datenbank).
+- 🧪 **Kubernetes/Helm** und **Observability** sind **lokal nachgewiesen** (kind bzw. Docker Compose) – ohne Cloud-Kosten.
+
 ## Projektübersicht
 
 **LaraShop** ist ein vollständiges E-Commerce-Projekt **plus** die komplette DevOps-Schicht
