@@ -26,6 +26,10 @@ spec:
             {{- toYaml .Values.worker.command | nindent 12 }}
           envFrom:
             {{- include "angel-lara.envFrom" . | nindent 12 }}
+          {{- with .Values.worker.livenessProbe }}
+          livenessProbe:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
           resources:
             {{- toYaml .Values.worker.resources | nindent 12 }}
 {{- end }}

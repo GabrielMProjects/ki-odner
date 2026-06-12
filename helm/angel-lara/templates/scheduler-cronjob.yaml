@@ -28,4 +28,8 @@ spec:
                 {{- toYaml .Values.scheduler.command | nindent 16 }}
               envFrom:
                 {{- include "angel-lara.envFrom" . | nindent 16 }}
+              {{- with .Values.scheduler.resources }}
+              resources:
+                {{- toYaml . | nindent 16 }}
+              {{- end }}
 {{- end }}

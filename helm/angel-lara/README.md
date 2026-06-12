@@ -21,7 +21,7 @@ Helm-Chart, das **Frontend** (Angular), **Backend** (Bagisto/Laravel), **Queue W
 | `templates/ingress.yaml` | Ingress (Traefik), Host/TLS/cert-manager optional. |
 | `templates/configmap.yaml` / `secret.yaml` | Nicht-sensible bzw. sensible Werte. |
 | `templates/hpa.yaml` | HorizontalPodAutoscaler (CPU). |
-| `templates/keda-scaledobject.yaml` | KEDA ScaledObject (Prometheus-Scaler). |
+| `templates/keda-scaledobject.yaml` | KEDA ScaledObject (Redis-Queue-Scaler) + optional TriggerAuthentication. |
 
 ## Lokale Prüfung (kein Deploy)
 
@@ -61,8 +61,23 @@ helm upgrade --install angel-lara helm/angel-lara -f my-values.yaml
 | `worker.enabled` | `true` | Queue Worker. |
 | `scheduler.enabled` | `true` | CronJob; Default `*/5 * * * *` (Laravel-üblich: `* * * * *`). |
 | `ingress.enabled` | `false` | Ingress (Traefik) aus. |
-| `autoscaling.enabled` | `false` | HPA aus. |
-| `keda.enabled` | `false` | KEDA ScaledObject aus (braucht KEDA-Operator). |
+| `autoscaling.enabled` | `false` | HPA (Backend, CPU) aus. **Braucht `metrics-server`** im Cluster. |
+| `keda.enabled` | `false` | KEDA ScaledObject (Worker, Redis-Queue-Scaler) aus. **Braucht KEDA-Operator.** |
+
+## Autoscaling – Voraussetzungen
+
+- **HPA (Backend, CPU):** benötigt einen laufenden **metrics-server**.
+  - **k3s** bringt `metrics-server` standardmäßig mit.
+  - **kind**: manuell installieren und Kubelet-TLS lockern:
+    ```bash
+    kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+    kubectl -n kube-system patch deploy metrics-server --type=json \
+      -p='[{"op":"add","path":"/spec/template/spec/containers/0/args/-","value":"--kubelet-insecure-tls"}]'
+    ```
+  - Ohne `metrics-server` bleibt die HPA bei `<unknown>` und skaliert nicht.
+- **KEDA (Worker, Redis-Queue):** benötigt den **KEDA-Operator** (`helm install keda kedacore/keda -n keda`).
+  Der Scaler liest die **Redis-List-Länge** der Laravel-Queue (`keda.redis.listName`).
+  ⚠️ **Beim Deploy prüfen**, dass `listName` dem echten Redis-Key entspricht (Laravel präfixt Queue-Keys oft, z. B. `…_database_queues:default`): `redis-cli KEYS '*queues*'`.
 
 ## 🔐 Secrets
 

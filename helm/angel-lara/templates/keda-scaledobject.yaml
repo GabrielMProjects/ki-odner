@@ -15,10 +15,31 @@ spec:
   pollingInterval: {{ .Values.keda.pollingInterval }}
   cooldownPeriod: {{ .Values.keda.cooldownPeriod }}
   triggers:
-    - type: prometheus
+    # Redis-Scaler: skaliert nach der Laenge der Laravel-Queue-List (echte Metrik).
+    - type: redis
       metadata:
-        serverAddress: {{ .Values.keda.prometheus.serverAddress | quote }}
-        metricName: {{ .Values.keda.prometheus.metricName | quote }}
-        query: {{ .Values.keda.prometheus.query | quote }}
-        threshold: {{ .Values.keda.prometheus.threshold | quote }}
+        address: {{ .Values.keda.redis.address | quote }}
+        listName: {{ .Values.keda.redis.listName | quote }}
+        listLength: {{ .Values.keda.redis.listLength | quote }}
+        databaseIndex: {{ .Values.keda.redis.databaseIndex | quote }}
+        enableTLS: {{ .Values.keda.redis.enableTLS | quote }}
+      {{- if .Values.secrets.REDIS_PASSWORD }}
+      authenticationRef:
+        name: {{ include "angel-lara.fullname" . }}-keda-redis-auth
+      {{- end }}
+{{- if .Values.secrets.REDIS_PASSWORD }}
+---
+# Bindet das Redis-Passwort aus dem App-Secret an den KEDA-Trigger.
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: {{ include "angel-lara.fullname" . }}-keda-redis-auth
+  labels:
+    {{- include "angel-lara.labels" . | nindent 4 }}
+spec:
+  secretTargetRef:
+    - parameter: password
+      name: {{ include "angel-lara.fullname" . }}-secret
+      key: REDIS_PASSWORD
+{{- end }}
 {{- end }}

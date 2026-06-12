@@ -7,7 +7,10 @@ metadata:
     {{- include "angel-lara.labels" . | nindent 4 }}
     app.kubernetes.io/component: migration
   annotations:
-    "helm.sh/hook": pre-install,pre-upgrade
+    # post-install/post-upgrade: laeuft NACH ConfigMap/Secret, daher steht envFrom
+    # (DB-Zugangsdaten) bereits zur Verfuegung. (Frueher pre-install -> Hook sah die
+    # Zugangsdaten noch nicht.)
+    "helm.sh/hook": post-install,post-upgrade
     "helm.sh/hook-weight": "0"
     "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
 spec:
@@ -23,8 +26,30 @@ spec:
         - name: migrate
           image: "{{ include "angel-lara.backend.image" . }}"
           imagePullPolicy: {{ .Values.backend.image.pullPolicy }}
+          {{- if .Values.migrations.seedBaseData }}
+          # migrate + idempotenter Basis-Seed (nur wenn noch keine Channels existieren)
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              echo "[migrate] php artisan migrate --force"
+              php artisan migrate --force
+              CH=$(php artisan tinker --execute="echo \Webkul\Core\Models\Channel::count();" 2>/dev/null | tr -dc "0-9")
+              if [ "${CH:-0}" -gt 0 ]; then
+                echo "[seed] Basisdaten bereits vorhanden (channels=${CH}) -> uebersprungen"
+              else
+                echo "[seed] Keine Channels gefunden -> Basis-Seed wird ausgefuehrt"
+                php artisan db:seed --class={{ .Values.migrations.baseSeederClass | quote }} --force
+              fi
+          {{- else }}
           command:
             {{- toYaml .Values.migrations.command | nindent 12 }}
+          {{- end }}
           envFrom:
             {{- include "angel-lara.envFrom" . | nindent 12 }}
+          {{- with .Values.migrations.resources }}
+          resources:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
 {{- end }}

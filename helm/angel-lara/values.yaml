@@ -20,6 +20,20 @@ frontend:
     limits:
       cpu: 250m
       memory: 128Mi
+  # Nginx liefert statisch aus -> einfache HTTP-Checks gegen "/"
+  probes:
+    readiness:
+      httpGet: { path: /, port: http }
+      initialDelaySeconds: 5
+      periodSeconds: 10
+      timeoutSeconds: 3
+      failureThreshold: 3
+    liveness:
+      httpGet: { path: /, port: http }
+      initialDelaySeconds: 10
+      periodSeconds: 20
+      timeoutSeconds: 3
+      failureThreshold: 3
 
 # ─── Backend (Laravel/Bagisto) ───────────────────────────────────────
 backend:
@@ -37,6 +51,36 @@ backend:
     limits:
       cpu: 500m
       memory: 512Mi
+  # startup: wartet auf vollstaendige Bereitschaft (inkl. DB/Migrationen)
+  # readiness: erst dann Traffic (API muss valide antworten)
+  # liveness: nur TCP-Port -> DB-Hickups loesen KEIN Restart-Looping aus
+  # Host-Header 'localhost' noetig: Bagisto loest den Channel ueber den Request-Host
+  # auf -> ohne passenden Host (z. B. Pod-IP) liefert /api/products HTTP 500.
+  probes:
+    startup:
+      httpGet:
+        path: /api/products
+        port: http
+        httpHeaders:
+          - { name: Host, value: localhost }
+      periodSeconds: 5
+      failureThreshold: 30        # bis zu ~150s fuer Laravel-Boot/Migration
+    readiness:
+      httpGet:
+        path: /api/products
+        port: http
+        httpHeaders:
+          - { name: Host, value: localhost }
+      initialDelaySeconds: 10
+      periodSeconds: 10
+      timeoutSeconds: 5
+      failureThreshold: 3
+    liveness:
+      tcpSocket: { port: http }
+      initialDelaySeconds: 30
+      periodSeconds: 20
+      timeoutSeconds: 5
+      failureThreshold: 3
 
 # ─── Queue Worker ────────────────────────────────────────────────────
 worker:
@@ -50,6 +94,19 @@ worker:
     limits:
       cpu: 250m
       memory: 256Mi
+  # Worker hat keinen HTTP-Port -> prozessbasierte Liveness:
+  # scannt /proc nach dem laufenden 'queue:work' (ohne ps/pgrep-Abhaengigkeit).
+  # Stirbt/haengt der Worker, schlaegt die Probe fehl -> Pod-Neustart.
+  livenessProbe:
+    exec:
+      command:
+        - sh
+        - -c
+        - 'for c in /proc/[0-9]*/cmdline; do tr "\0" " " < "$c" 2>/dev/null | grep -q "queue:work" && exit 0; done; exit 1'
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 3
 
 # ─── Scheduler (CronJob) ─────────────────────────────────────────────
 # Laravel empfiehlt eigentlich "jede Minute" (* * * * *), da der Scheduler intern
@@ -58,12 +115,34 @@ scheduler:
   enabled: true
   schedule: "*/5 * * * *"
   command: ["php", "artisan", "schedule:run"]
+  # Kurzlaufender CronJob – kleine, klar begrenzte Resources
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
 
-# ─── Migrationen (Helm pre-install/pre-upgrade Hook) ─────────────────
+# ─── Migrationen (Helm post-install/post-upgrade Hook) ───────────────
 migrations:
   enabled: false # Default AUS – bewusst aktivieren
   command: ["php", "artisan", "migrate", "--force"]
   backoffLimit: 3
+  # Bagisto-Basisdaten (Channels/Locales/Currencies/Admin) beim Install seeden.
+  # Eine frische Bagisto-DB ist ohne diese Daten NICHT lauffaehig (Storefront 500).
+  # Idempotent: seedet nur, wenn noch KEINE Channels existieren -> keine Duplikate,
+  # auch bei post-upgrade gefahrlos.
+  seedBaseData: false
+  baseSeederClass: "Webkul\\Installer\\Database\\Seeders\\DatabaseSeeder"
+  # Einmaliger Job – darf etwas mehr Speicher fuer die Migration nutzen
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
 # ─── Nicht-sensible Konfiguration (→ ConfigMap) ──────────────────────
 config:
@@ -107,22 +186,35 @@ ingress:
     enabled: false
     clusterIssuer: "letsencrypt-prod"
 
-# ─── HPA (CPU-basiert) ───────────────────────────────────────────────
+# ─── HPA (CPU-basiert, Backend) ──────────────────────────────────────
+# VORAUSSETZUNG: metrics-server im Cluster (liefert CPU/Memory an die HPA).
+#   kind/k3s:  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+#   (k3s bringt metrics-server standardmaessig mit; bei kind manuell + '--kubelet-insecure-tls')
+# Ohne metrics-server bleibt die HPA <unknown> und skaliert nicht.
 autoscaling:
   enabled: false
   minReplicas: 1
   maxReplicas: 5
   targetCPUUtilizationPercentage: 70
 
-# ─── KEDA (ereignisbasiert, Prometheus-Scaler) ──────────────────────
+# ─── KEDA (ereignisbasiert, Redis-Queue-Scaler) ─────────────────────
+# Skaliert die Worker nach der LAENGE der Laravel-Redis-Queue (echte Metrik,
+# kein Platzhalter). Benoetigt den KEDA-Operator im Cluster (keda.sh).
+# minReplicas: 0 -> "scale to zero" moeglich (KEDA-Kernfeature) wenn keine Jobs warten.
 keda:
   enabled: false
-  minReplicas: 1
+  minReplicas: 1          # auf 0 setzen fuer Scale-to-Zero
   maxReplicas: 10
-  pollingInterval: 30
-  cooldownPeriod: 300
-  prometheus:
-    serverAddress: "http://prometheus-server.observability.svc.cluster.local"
-    metricName: "laravel_queue_length"
-    query: "sum(laravel_queue_size)"
-    threshold: "100"
+  pollingInterval: 15     # Sekunden zwischen Queue-Abfragen
+  cooldownPeriod: 120     # Sekunden bis zum Herunterskalieren
+  redis:
+    # FQDN noetig: der KEDA-Operator laeuft im Namespace 'keda' und kann den kurzen
+    # Servicenamen 'redis' nicht aufloesen. <service>.<namespace>.svc.cluster.local
+    address: "redis.angel-lara.svc.cluster.local:6379"
+    # WICHTIG: muss dem ECHTEN Redis-Key der Laravel-Queue entsprechen.
+    # Laravel praefixt Queue-Keys oft (z. B. "<app>_database_queues:default").
+    # Beim Deploy verifizieren:  redis-cli KEYS '*queues*'
+    listName: "queues:default"
+    listLength: "5"                # Ziel: ~5 wartende Jobs pro Worker-Replica
+    databaseIndex: "0"
+    enableTLS: "false"
