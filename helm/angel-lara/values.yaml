@@ -251,3 +251,11 @@ keda:
     listLength: "5"                # Ziel: ~5 wartende Jobs pro Worker-Replica
     databaseIndex: "0"
     enableTLS: "false"
+
+# ─── Alerting (PrometheusRule fuer kube-prometheus-stack) ────────────
+# Prometheus selektiert Rules ueber leere Selektoren (alle NS/Labels),
+# daher reicht die Rule im angel-lara-Namespace. 'releaseLabel' nur konventionell.
+alerts:
+  enabled: true        # echte Regel (AngelLaraBackendUnavailable) rendern
+  demoAlert: false     # Test-Alert vector(1) – NUR fuer den Beweis per --set true
+  releaseLabel: "kps"  # optionales Label fuer den Prometheus-Operator

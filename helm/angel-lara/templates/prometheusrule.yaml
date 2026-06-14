@@ -1,0 +1,37 @@
+{{- if (.Values.alerts | default dict).enabled }}
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: {{ include "angel-lara.fullname" . }}-alerts
+  labels:
+    {{- include "angel-lara.labels" . | nindent 4 }}
+    {{- with (.Values.alerts | default dict).releaseLabel }}
+    release: {{ . | quote }}
+    {{- end }}
+spec:
+  groups:
+    - name: angel-lara.rules
+      rules:
+        # Echte Regel: feuert nur, wenn das Backend keine verfuegbaren Replicas hat.
+        - alert: AngelLaraBackendUnavailable
+          expr: kube_deployment_status_replicas_available{namespace="{{ .Release.Namespace }}", deployment="{{ include "angel-lara.backend.fullname" . }}"} == 0
+          for: 2m
+          labels:
+            severity: warning
+            app: angel-lara
+          annotations:
+            summary: "angel-lara backend has no available replicas"
+            description: "Deployment {{ include "angel-lara.backend.fullname" . }} hat seit 2m keine verfuegbaren Replicas."
+        {{- if (.Values.alerts | default dict).demoAlert }}
+        # Temporaerer Test-Alert (vector(1) -> feuert sofort). Nur per --set aktiviert.
+        - alert: AngelLaraDemoAlert
+          expr: vector(1)
+          for: 0m
+          labels:
+            severity: info
+            app: angel-lara
+          annotations:
+            summary: "angel-lara demo alert (test)"
+            description: "Beweis der Prometheus->Alertmanager-Kette. Per --set alerts.demoAlert=true aktiviert, danach wieder deaktivieren."
+        {{- end }}
+{{- end }}
