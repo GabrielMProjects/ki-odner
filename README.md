@@ -4,25 +4,50 @@
 [![IaC](https://img.shields.io/badge/IaC-Terraform-7B42BC?logo=terraform&logoColor=white)](infra/terraform)
 [![Kubernetes](https://img.shields.io/badge/Deploy-Helm_/_k3s-326CE5?logo=kubernetes&logoColor=white)](helm/angel-lara)
 
-## 🚀 Live-Demo
+## 🚀 Live-Demo (AWS · k3s · Helm)
 
-[![LaraShop Live-Demo](docs/demo.gif)](http://3.75.228.58/)
+Die Demo läuft auf **einer AWS-EC2-Instanz** (m7i-flex.large, free-tier-fähig) mit **k3s + Helm**
+und dem vollständigen **Observability-Stack**. Stabile URLs über `nip.io` (kein LoadBalancer):
 
-**▶️ Live ausprobieren:** http://3.75.228.58/
+- **Shop:** http://app.18.157.163.103.nip.io/
+- **Grafana:** http://grafana.18.157.163.103.nip.io/
 
-> **AWS Live-Demo** · EC2 · ECR · IAM Role · Docker Compose · isolierte Demo-Datenbank
+> ⚠️ **Temporäre Demo.** Die Instanz wird bewusst nur zeitweise betrieben und kann abgeschaltet
+> sein (Kosten/Teardown). Architektur, Beweise und Screenshots unten sind unabhängig davon gültig.
 
 ## 📋 Nachweise / Proofs
 
-| Nachweis | Link | Umgebung |
+| Nachweis | Status | Umgebung |
 |---|---|---|
-| **Live-Demo + GIF** | [▶️ http://3.75.228.58/](http://3.75.228.58/) · [Demo-GIF](docs/demo.gif) | AWS (EC2 · ECR · IAM Role · Docker Compose) |
-| **Kubernetes / Helm Proof** | [docs/k8s-proof.md](docs/k8s-proof.md) | lokal (kind) |
-| **Observability Proof** | [docs/observability-proof.md](docs/observability-proof.md) | lokal (Docker Compose) |
-| **Architektur** | [docs/architecture.md](docs/architecture.md) | – |
+| **App** (Angular SPA + Bagisto, 11 Demo-Produkte) | ✅ live | AWS · EC2 · k3s · Helm |
+| **Distributed Tracing** (Backend+Worker → OTel → Tempo → Grafana) | ✅ live | AWS k3s |
+| **Zentrale Logs** (Backend+Worker Laravel-Logs in Loki via Alloy) | ✅ live | AWS k3s |
+| **Alerting** (PrometheusRule → Alertmanager empfängt Alert) | ✅ nachgewiesen | AWS k3s |
+| **Autoscaling** (HPA CPU · KEDA Redis-Scaler · optional Prometheus-Scaler) | ✅ nachgewiesen | AWS k3s |
+| **Frühere lokale Proofs** (kind / Compose) | 📄 dokumentiert | [k8s-proof](docs/k8s-proof.md) · [observability](docs/observability-k8s-proof.md) |
+| **Architektur** | 📄 | [docs/architecture.md](docs/architecture.md) |
 
-- 🟢 **AWS Live-Demo:** läuft aktuell auf **EC2 + ECR + IAM Role + Docker Compose** (isolierte Demo-Datenbank).
-- 🧪 **Kubernetes/Helm** und **Observability** sind **lokal nachgewiesen** (kind bzw. Docker Compose) – ohne Cloud-Kosten.
+Eine ehrliche Gesamtübersicht steht in der **[Live-Status-Matrix](#live-status-matrix)** unten.
+
+## Live-Status-Matrix
+
+| Komponente | Status | Umgebung / Hinweis |
+|---|---|---|
+| Angular 18 Frontend · Bagisto/Laravel 11 Backend · Docker | 🟢 live | AWS k3s; Backend als nginx+php-fpm-Split |
+| k3s + Helm-Deployment | 🟢 live | EC2 (Ansible-provisioniert) |
+| ECR (Container-Registry) | 🟢 live genutzt | Images dort, IAM-Pull |
+| MySQL · Redis (in-cluster, PVC) | 🟢 live | persistent (local-path) |
+| OpenTelemetry Traces (HTTP + Queue-Spans) | 🟢 live | manuelle OTel-SDK-Instrumentierung → Tempo |
+| Loki Logs (Backend via Datei+tail, Worker via stderr) | 🟢 live | Grafana Alloy DaemonSet |
+| Prometheus · Grafana · Alertmanager | 🟢 live | kube-prometheus-stack |
+| HPA (CPU) | 🟢 live | Backend |
+| KEDA Redis-Queue-Scaler | 🟢 live | Worker (normaler Steady-State-Scaler) |
+| KEDA Prometheus-Scaler | 🟢 nachgewiesen | **optional** (Toggle), als Demo getestet: Worker 1→2→1 |
+| Tempo-Persistenz | 🟡 emptyDir | Traces gehen bei Pod-Neustart verloren; PVC optional/geplant |
+| RDS · S3 · CloudFront · ElastiCache | 🔵 nicht live | nur `enable_*`-Toggles, **keine** Terraform-Module, **nicht** bewiesen |
+| GitHub Actions CI | 🟢 | Lint/Build/Validate – **kein** Deploy/Push |
+
+🟢 live/nachgewiesen · 🟡 vorhanden mit Einschränkung · 🔵 optionaler, nicht umgesetzter Ausbau
 
 ## Projektübersicht
 
@@ -86,7 +111,7 @@ Eine ausführlichere Variante mit Erläuterungen: **[docs/architecture.md](docs/
 | **Docker** | Containerisierung von Frontend & Backend |
 | **Docker Compose** | lokaler Multi-Service-Stack (App + Observability) |
 | **Terraform** | Infrastructure as Code (AWS) |
-| **AWS** | Ziel-Cloud (EC2, optional RDS/S3/CloudFront) |
+| **AWS** | EC2 + ECR **live** genutzt; RDS/S3/CloudFront nur als Toggles vorbereitet (nicht live) |
 | **Ansible** | Server-Provisioning (k3s, Docker, Helm) |
 | **k3s** | leichtgewichtiges Kubernetes |
 | **Helm** | Kubernetes-Paketierung/-Deployment |
@@ -97,7 +122,7 @@ Eine ausführlichere Variante mit Erläuterungen: **[docs/architecture.md](docs/
 | **Tempo** | Distributed Tracing |
 | **OpenTelemetry** | zentraler Telemetrie-Eingang (OTLP) |
 | **Alertmanager** | Alarm-Routing |
-| **KEDA** | ereignisbasiertes Autoscaling (Prometheus-Scaler) |
+| **KEDA** | ereignisbasiertes Autoscaling (Redis-Queue-Scaler; optionaler Prometheus-Scaler) |
 
 ---
 
@@ -216,17 +241,22 @@ und mit AWS-**OIDC** statt langlebiger Keys.
 
 ## Observability
 
-Lokaler Stack in `observability/` (Start: `docker compose -f observability/docker-compose.observability.yml up -d`):
+**Live auf AWS k3s** (Helm: kube-prometheus-stack, Loki, Tempo, OTel Collector, Grafana Alloy):
 
-- **OpenTelemetry Collector** – zentraler OTLP-Eingang (gRPC 4317 / HTTP 4318), verteilt Telemetrie.
-- **Prometheus** (`:9090`) – Metriken + Alert-Regeln.
-- **Loki** (`:3100`) – zentrale Logs.
-- **Tempo** (`:3200`) – verteilte Traces.
-- **Grafana** (`:3000`) – Dashboards (Datasources + Dashboards auto-provisioniert).
-- **Alertmanager** (`:9093`) – Alarm-Routing (Demo, ohne echte Webhooks).
+- **OpenTelemetry Collector** – OTLP-Eingang (4317/4318) → Tempo (Traces), Loki (Logs), Prometheus (Metriken).
+- **Traces:** Die App ist **manuell mit dem OpenTelemetry-PHP-SDK** instrumentiert –
+  **HTTP-Server-Spans** (Backend) und **Queue-Consumer-Spans** (Worker), sichtbar in **Tempo/Grafana**
+  als `service.name = angel-lara-backend` / `angel-lara-worker`.
+- **Logs:** **Grafana Alloy** (DaemonSet) sammelt Pod-Logs → **Loki**. Echte Laravel-`production.*`-Logs
+  von **Backend** (`container=php-fpm`, via Datei + `tail`) **und Worker** (`container=worker`, via stderr).
+- **Alerting:** eigene **PrometheusRule** (`AngelLaraBackendUnavailable`) + nachgewiesener
+  **Alertmanager-Empfang** eines Test-Alerts (API-Beweis, ohne externen Dienst).
+- **Autoscaling:** **HPA** (Backend-CPU), **KEDA** Redis-Queue-Scaler (Worker, normaler Scaler) +
+  optionaler **Prometheus-Scaler** (als Demo nachgewiesen: 1→2→1).
+- **Tempo** nutzt aktuell **emptyDir** (keine Persistenz – Traces gehen bei Pod-Neustart verloren);
+  ein PVC ist als optionaler Ausbau vorgesehen.
 
-Anbindung der App über OTLP bzw. einen `/metrics`-Scrape-Target; im Cluster kann **KEDA** gegen
-Prometheus skalieren.
+Der **lokale** Compose-Stack (`observability/`) bleibt für die kostenfreie lokale Reproduktion erhalten.
 
 ---
 
@@ -234,7 +264,7 @@ Prometheus skalieren.
 
 - **Terraform** (`infra/terraform/`) – Provider/Variablen/Outputs + zwei Module:
   - **network** – VPC, je 2 öffentliche/private Subnetze, IGW, Route Tables, optionales NAT Gateway.
-  - **compute** – kleine **EC2** (Ubuntu, `t3.micro`) + Security Group (SSH/HTTP/HTTPS, k8s-API 6443
+  - **compute** – **EC2** (Ubuntu; Demo: `m7i-flex.large`, free-tier-fähig) + Security Group (SSH/HTTP/HTTPS, k8s-API 6443
     nicht öffentlich) + Key Pair – **nur** bei `enable_compute=true`.
 - **Ansible** (`ansible/`) – provisioniert die EC2 zu einem **k3s-Node** (Docker, k3s, Helm, UFW).
 - **Helm** (`helm/angel-lara/`) – deployt die Container-Images auf k3s (inkl. Worker/Scheduler/Ingress/HPA/KEDA).
@@ -264,10 +294,10 @@ Prometheus skalieren.
 | **Kubernetes** | k3s-Zielplattform, Deployments/Services/CronJob/Ingress |
 | **Helm** | vollständiges Chart mit Hooks, HPA, KEDA, ConfigMap/Secret |
 | **Terraform** | modulare IaC (network/compute), Toggles, `fmt/validate` in CI |
-| **AWS** | EC2/VPC-Design, Deployment-Guide, RDS/S3/CloudFront vorbereitet |
+| **AWS** | EC2/VPC/ECR live (k3s-Demo); RDS/S3/CloudFront als Toggles vorbereitet (Module ausstehend) |
 | **Ansible** | Rollenbasiertes Provisioning eines k3s-Nodes |
 | **GitHub Actions** | CI für App, IaC, Container, Helm |
-| **Observability** | Prometheus/Grafana/Loki/Tempo/OTel/Alertmanager |
+| **Observability** | OTel-Tracing (Backend+Worker), Loki-Logs, Alertmanager-Alert, KEDA-Scaler – **live** nachgewiesen |
 | **CI/CD** | automatisierte Qualitätsprüfung, sichere Deploy-Strategie |
 | **Infrastructure as Code** | gesamte Infra versioniert, reproduzierbar, reviewbar |
 
@@ -280,6 +310,13 @@ Prometheus skalieren.
 - **Produktbilder:** Uploads liegen in `lara/storage/app/public/` und sind (Laravel-üblich) nicht im
   Repo. Frische Installation zeigt Platzhalter, bis Beispielprodukte geseedet werden.
 - **`.env` / Build-Artefakte:** `.env` und `lara/public/build/*` sind gitignored und gehören nicht ins Repo.
+- **Tempo-Persistenz:** Tempo läuft mit `emptyDir` (Demo) – bei Pod-Neustart gehen alte Traces verloren.
+  Optionaler Ausbau: kleines PVC (analog MySQL/Backend).
+- **Backend-App-Logs:** Laravel/php-fpm loggt in eine Datei, ein `tail` im php-fpm-Container leitet sie
+  nach stdout → Loki (FPM `catch_workers_output` reicht `php://stderr` in diesem Image nicht durch).
+  Der **Worker** loggt direkt via `stderr`.
+- **AWS-Ausbau:** `enable_rds`/`enable_s3`/`enable_cloudfront`/`enable_elasticache` existieren als
+  Toggles, die zugehörigen Terraform-Module sind aber **noch nicht implementiert** (bewusst, Kosten).
 
 ---
 

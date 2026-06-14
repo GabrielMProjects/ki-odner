@@ -1,7 +1,11 @@
 # observability
 
-Lokaler Observability-Stack (Demo) für **Metriken, Logs und Traces** – komplett lokal,
-**ohne Cloud** und **ohne echte Secrets**.
+Observability-Stack für **Metriken, Logs und Traces**.
+
+> **Zwei Varianten:** Dieser Ordner enthält den **lokalen** Compose-Stack (kostenfrei, ohne Cloud).
+> Der **Live-Stack auf AWS k3s** wird über Helm/`observability/k8s/` betrieben (kube-prometheus-stack,
+> Loki, Tempo, OTel Collector, Grafana Alloy) – inkl. echter App-Traces, Loki-Logs, Alertmanager-Alert
+> und KEDA-Scaler. Beide ohne echte Secrets.
 
 ## Bestandteile & Zweck
 
