@@ -43,7 +43,7 @@ Eine ehrliche Gesamtübersicht steht in der **[Live-Status-Matrix](#live-status-
 | HPA (CPU) | 🟢 live | Backend |
 | KEDA Redis-Queue-Scaler | 🟢 live | Worker (normaler Steady-State-Scaler) |
 | KEDA Prometheus-Scaler | 🟢 nachgewiesen | **optional** (Toggle), als Demo getestet: Worker 1→2→1 |
-| Tempo-Persistenz | 🟡 emptyDir | Traces gehen bei Pod-Neustart verloren; PVC optional/geplant |
+| Tempo-Persistenz | 🟢 PVC | dediziertes local-path PVC `tempo-data` (2Gi); Traces überleben `tempo-0`-Neustart (Demo: single-node local-path, kein Multi-AZ) |
 | RDS · S3 · CloudFront · ElastiCache | 🔵 nicht live | nur `enable_*`-Toggles, **keine** Terraform-Module, **nicht** bewiesen |
 | GitHub Actions CI | 🟢 | Lint/Build/Validate – **kein** Deploy/Push |
 
@@ -253,8 +253,9 @@ und mit AWS-**OIDC** statt langlebiger Keys.
   **Alertmanager-Empfang** eines Test-Alerts (API-Beweis, ohne externen Dienst).
 - **Autoscaling:** **HPA** (Backend-CPU), **KEDA** Redis-Queue-Scaler (Worker, normaler Scaler) +
   optionaler **Prometheus-Scaler** (als Demo nachgewiesen: 1→2→1).
-- **Tempo** nutzt aktuell **emptyDir** (keine Persistenz – Traces gehen bei Pod-Neustart verloren);
-  ein PVC ist als optionaler Ausbau vorgesehen.
+- **Tempo** persistiert Traces auf einem **dedizierten local-path PVC** (`tempo-data`, 2Gi, RWO)
+  unter `/var/tempo` – Traces **überleben einen `tempo-0`-Pod-Neustart** (per Delete-Test verifiziert).
+  Für die Demo bewusst single-node/local-path (kein Multi-AZ/Production-Storage).
 
 Der **lokale** Compose-Stack (`observability/`) bleibt für die kostenfreie lokale Reproduktion erhalten.
 
@@ -310,8 +311,9 @@ Der **lokale** Compose-Stack (`observability/`) bleibt für die kostenfreie loka
 - **Produktbilder:** Uploads liegen in `lara/storage/app/public/` und sind (Laravel-üblich) nicht im
   Repo. Frische Installation zeigt Platzhalter, bis Beispielprodukte geseedet werden.
 - **`.env` / Build-Artefakte:** `.env` und `lara/public/build/*` sind gitignored und gehören nicht ins Repo.
-- **Tempo-Persistenz:** Tempo läuft mit `emptyDir` (Demo) – bei Pod-Neustart gehen alte Traces verloren.
-  Optionaler Ausbau: kleines PVC (analog MySQL/Backend).
+- **Tempo-Persistenz:** Tempo nutzt ein dediziertes **local-path PVC** (`tempo-data`, 2Gi) unter
+  `/var/tempo`; Traces überleben einen `tempo-0`-Neustart. Bewusst single-node/local-path (Demo) –
+  kein Multi-AZ/Production-Grade-Storage.
 - **Backend-App-Logs:** Laravel/php-fpm loggt in eine Datei, ein `tail` im php-fpm-Container leitet sie
   nach stdout → Loki (FPM `catch_workers_output` reicht `php://stderr` in diesem Image nicht durch).
   Der **Worker** loggt direkt via `stderr`.

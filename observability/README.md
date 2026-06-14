@@ -5,7 +5,8 @@ Observability-Stack für **Metriken, Logs und Traces**.
 > **Zwei Varianten:** Dieser Ordner enthält den **lokalen** Compose-Stack (kostenfrei, ohne Cloud).
 > Der **Live-Stack auf AWS k3s** wird über Helm/`observability/k8s/` betrieben (kube-prometheus-stack,
 > Loki, Tempo, OTel Collector, Grafana Alloy) – inkl. echter App-Traces, Loki-Logs, Alertmanager-Alert
-> und KEDA-Scaler. Beide ohne echte Secrets.
+> und KEDA-Scaler. Beide ohne echte Secrets. Tempo persistiert im Live-Stack seine Traces auf einem
+> dedizierten local-path PVC (`tempo-data`, 2Gi).
 
 ## Bestandteile & Zweck
 

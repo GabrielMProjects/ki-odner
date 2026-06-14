@@ -3,7 +3,8 @@
 Deployt **Prometheus, Grafana, Alertmanager, Loki, Tempo und den OpenTelemetry Collector**
 per Helm in den Namespace `observability` – rein **lokal** (kind/k3s), **keine Cloud, keine Kosten**.
 
-Schlank konfiguriert: **keine Persistence** (emptyDir), kurze Retention, kleine Requests.
+Schlank konfiguriert: kurze Retention, kleine Requests. Die meisten Komponenten nutzen `emptyDir`;
+**Tempo** persistiert seine Traces auf einem dedizierten **local-path PVC** (`tempo-data`, 2Gi).
 Tempo und OTel-Collector sind auf getestete, lokal gecachte Versionen **gepinnt**.
 
 ## Helm-Repos
@@ -29,7 +30,8 @@ helm install kps prometheus-community/kube-prometheus-stack -n observability \
 # 2) Loki
 helm install loki grafana/loki -n observability -f loki-values.yaml
 
-# 3) Tempo
+# 3) Tempo (mit persistentem Trace-PVC fuer /var/tempo)
+kubectl apply -f tempo-pvc.yaml
 helm install tempo grafana/tempo -n observability -f tempo-values.yaml
 
 # 4) OpenTelemetry Collector
@@ -65,7 +67,9 @@ OTLP-Eingang des Collectors: gRPC `:4317`, HTTP `:4318` (Service `otel-collector
 
 ## Hinweise / Bekannte Einschränkungen
 
-- **Lokal, keine Cloud-Kosten.** Alles emptyDir → Daten sind nach Pod-Neustart weg (Wegwerf-Demo).
+- **Schlanke Demo.** Die meisten Komponenten nutzen `emptyDir` (Daten nach Pod-Neustart weg).
+  **Ausnahme Tempo:** persistiert Traces auf einem local-path PVC (`tempo-data`, 2Gi) → überleben
+  einen `tempo-0`-Neustart. Bewusst single-node/local-path (kein Multi-AZ/Production-Storage).
 - **Versions-Pinning:** Tempo `2.3.1`, OTel-Collector contrib `0.96.0` (Lehre aus dem Compose-Proof: `:latest` driftet im Config-Schema).
 - **Speicher:** Stack braucht ~2–2,5 GiB RAM (Requests) + ~1,5–2 GB Image-/Datendisk. Lokal vorher genug Platz schaffen.
 - App-Telemetrie (Traces/Metriken aus Angular/Laravel) ist optional und Teil eines späteren Schrittes (App-Instrumentierung).
