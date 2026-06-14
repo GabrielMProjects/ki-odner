@@ -177,8 +177,12 @@ config:
   # via /storage-Symlink + /cache-Resize). Default 'local' wuerde nach storage/app
   # schreiben -> Bilder waeren nicht web-erreichbar. Muss 'public' sein.
   FILESYSTEM_DISK: "public"
-  # Backend-App-Logs -> stdout/stderr (greift mit dem FPM-Fix im neuen Image).
-  LOG_CHANNEL: "stderr"
+  # Backend (php-fpm) loggt in Datei (storage/logs/laravel.log); ein tail im
+  # php-fpm-Container leitet sie nach Container-stdout -> Alloy -> Loki.
+  # (php://stderr wird von FPM catch_workers_output hier nicht durchgereicht.)
+  # Der Worker ueberschreibt LOG_CHANNEL per env auf "stderr" (CLI -> stdout direkt).
+  LOG_CHANNEL: "stack"
+  LOG_STACK: "single"
   # ── OpenTelemetry (manuelle Instrumentierung via SDK-env-Autoloader; nur Traces) ──
   OTEL_PHP_AUTOLOAD_ENABLED: "true"
   OTEL_TRACES_EXPORTER: "otlp"

@@ -63,7 +63,7 @@ spec:
           # Rechte sicherstellen, dann FPM im Vordergrund (Laravel-Logs -> Container-stdout).
           command: ["sh", "-c"]
           args:
-            - 'chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true; exec php-fpm -F'
+            - 'touch storage/logs/laravel.log; chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true; tail -n0 -F storage/logs/laravel.log & exec php-fpm -F'
           envFrom:
             {{- include "angel-lara.envFrom" . | nindent 12 }}
           env:
