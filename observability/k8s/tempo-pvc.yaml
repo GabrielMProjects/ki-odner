@@ -1,0 +1,20 @@
+# Eigenstaendiger PVC fuer Tempo-Traces (/var/tempo).
+# Bewusst NICHT ueber das Chart (persistence.enabled bleibt false), damit der
+# Wechsel von emptyDir -> PVC eine reine Pod-Template-Aenderung bleibt
+# (kein StatefulSet-Delete noetig). StorageClass local-path nutzt
+# WaitForFirstConsumer -> der Claim bindet, sobald tempo-0 ihn mountet.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: tempo-data
+  namespace: observability
+  labels:
+    app.kubernetes.io/name: tempo
+    app.kubernetes.io/component: traces-storage
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi

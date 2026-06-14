@@ -26,9 +26,13 @@ tempo:
 persistence:
   enabled: false
 
-# Daten-Pfad /var/tempo ist ohne Persistence nicht beschreibbar -> emptyDir mounten.
+# Daten-Pfad /var/tempo wird ueber einen EIGENSTAENDIGEN PVC (tempo-data) bereitgestellt
+# statt emptyDir -> Traces/WAL ueberleben Pod-Neustarts. persistence bleibt false,
+# damit der Wechsel eine reine Pod-Template-Aenderung ist (kein StatefulSet-Delete).
+# PVC-Manifest: observability/k8s/tempo-pvc.yaml
 extraVolumes:
   - name: tempo-data
-    emptyDir: {}
+    persistentVolumeClaim:
+      claimName: tempo-data
 
-# Tempo schreibt Traces lokal in emptyDir (Wegwerf-Demo)
+# Tempo schreibt Traces nach /var/tempo auf den persistenten PVC (local-path, 2Gi)
