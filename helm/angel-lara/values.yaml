@@ -51,6 +51,18 @@ backend:
     limits:
       cpu: 500m
       memory: 512Mi
+  # Geteilter, persistenter Storage fuer hochgeladene/geseedete Produktbilder
+  # (storage/app/public). NOETIG, sobald das Backend per HPA auf >1 Replica skaliert:
+  # ohne gemeinsames Volume haette jeder Pod sein eigenes ephemeres Dateisystem,
+  # und /cache lieferte je nach load-balanciertem Pod 200 ODER 404.
+  # Single-Node k3s: local-path (Default-StorageClass) RWO – mehrere Pods auf
+  # demselben Node teilen das Volume problemlos.
+  persistence:
+    enabled: false                                  # Default AUS – fuer die Multi-Replica-Demo aktivieren
+    mountPath: /var/www/html/storage/app/public
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    storageClassName: ""                            # leer -> Default-StorageClass (local-path)
   # startup: wartet auf vollstaendige Bereitschaft (inkl. DB/Migrationen)
   # readiness: erst dann Traffic (API muss valide antworten)
   # liveness: nur TCP-Port -> DB-Hickups loesen KEIN Restart-Looping aus
@@ -87,6 +99,9 @@ worker:
   enabled: true
   replicaCount: 1
   command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=90"]
+  # Worker-Logs nach stderr (CLI-Prozess) -> Container-stdout -> Alloy -> Loki.
+  # Leer lassen -> faellt auf den Default-Stack (Datei) zurueck.
+  logChannel: "stderr"
   resources:
     requests:
       cpu: 50m
@@ -158,7 +173,21 @@ config:
   REDIS_CLIENT: "predis"
   QUEUE_CONNECTION: "redis"
   CACHE_STORE: "redis"
-  FILESYSTEM_DISK: "local"
+  # Bagisto serviert Produktbilder ueber den 'public'-Disk (storage/app/public,
+  # via /storage-Symlink + /cache-Resize). Default 'local' wuerde nach storage/app
+  # schreiben -> Bilder waeren nicht web-erreichbar. Muss 'public' sein.
+  FILESYSTEM_DISK: "public"
+  # Backend-App-Logs -> stdout/stderr (greift mit dem FPM-Fix im neuen Image).
+  LOG_CHANNEL: "stderr"
+  # ── OpenTelemetry (manuelle Instrumentierung via SDK-env-Autoloader; nur Traces) ──
+  OTEL_PHP_AUTOLOAD_ENABLED: "true"
+  OTEL_TRACES_EXPORTER: "otlp"
+  OTEL_METRICS_EXPORTER: "none"
+  OTEL_LOGS_EXPORTER: "none"
+  OTEL_EXPORTER_OTLP_PROTOCOL: "http/protobuf"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector-opentelemetry-collector.observability.svc.cluster.local:4318"
+  OTEL_PROPAGATORS: "tracecontext,baggage"
+  OTEL_TRACES_SAMPLER: "always_on"
 
 # ─── Sensible Werte (→ Secret) – NUR PLATZHALTER, keine echten Secrets! ──
 # APP_KEY NICHT echt setzen. Real per --set-file / externes Secret / Sealed Secret.

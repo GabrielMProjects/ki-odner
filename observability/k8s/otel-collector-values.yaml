@@ -1,9 +1,10 @@
-# open-telemetry/opentelemetry-collector – OTLP-Gateway (lokale Demo).
-# Image auf contrib 0.96.0 gepinnt (bereits lokal gecached -> kein erneuter Pull).
+# open-telemetry/opentelemetry-collector – OTLP-Gateway.
+# Image-Tag MUSS zur Chart-appVersion passen: aeltere Images verstehen die vom Chart
+# erzeugte service.telemetry-Config (z. B. with_resource_constant_labels) nicht.
 mode: deployment
 image:
   repository: otel/opentelemetry-collector-contrib
-  tag: "0.96.0"
+  tag: "0.153.0"
 
 resources:
   requests:

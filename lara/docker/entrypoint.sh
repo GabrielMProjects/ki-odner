@@ -27,7 +27,8 @@ fi
 # Rechte sicherstellen (falls Volumes gemountet wurden)
 chown -R www-data:www-data storage bootstrap/cache 2>/dev/null || true
 
-# PHP-FPM im Hintergrund, dann das Hauptkommando (Nginx) im Vordergrund.
-php-fpm -D
+# PHP-FPM im FOREGROUND (-F), von der Shell backgrounded -> erbt Container-stdout/stderr,
+# damit catch_workers_output (Laravel-Logs) wirklich an den Container-Output gelangt.
+php-fpm -F &
 
 exec "$@"

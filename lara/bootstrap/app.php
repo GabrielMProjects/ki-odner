@@ -36,6 +36,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->append(SecureHeaders::class);
         $middleware->append(CanInstall::class);
 
+        // OpenTelemetry: Server-Span pro HTTP-Request (try/finally; Flush in terminate()).
+        $middleware->append(\App\Http\Middleware\TraceRequests::class);
+
         /**
          * Add the overridden middleware at the end of the list.
          */

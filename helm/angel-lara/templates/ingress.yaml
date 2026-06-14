@@ -24,20 +24,16 @@ spec:
     - host: {{ .Values.ingress.host | quote }}
       http:
         paths:
-          - path: /api
+          {{- /* Backend bedient API, Admin und die Asset-Routen (Bilder/Resize/Themes). */}}
+          {{- range $p := list "/api" "/admin" "/cache" "/storage" "/themes" "/vendor" }}
+          - path: {{ $p }}
             pathType: Prefix
             backend:
               service:
-                name: {{ include "angel-lara.backend.fullname" . }}
+                name: {{ include "angel-lara.backend.fullname" $ }}
                 port:
-                  number: {{ .Values.backend.service.port }}
-          - path: /admin
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ include "angel-lara.backend.fullname" . }}
-                port:
-                  number: {{ .Values.backend.service.port }}
+                  number: {{ $.Values.backend.service.port }}
+          {{- end }}
           - path: /
             pathType: Prefix
             backend:

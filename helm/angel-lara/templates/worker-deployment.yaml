@@ -14,6 +14,10 @@ spec:
       app.kubernetes.io/component: worker
   template:
     metadata:
+      annotations:
+        # Rollt die Pods automatisch bei ConfigMap/Secret-Aenderung (siehe Backend-Deployment).
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
       labels:
         {{- include "angel-lara.selectorLabels" . | nindent 8 }}
         app.kubernetes.io/component: worker
@@ -26,6 +30,14 @@ spec:
             {{- toYaml .Values.worker.command | nindent 12 }}
           envFrom:
             {{- include "angel-lara.envFrom" . | nindent 12 }}
+          env:
+            - name: OTEL_SERVICE_NAME
+              value: angel-lara-worker
+            {{- if .Values.worker.logChannel }}
+            # CLI-Prozess queue:work -> php://stderr landet direkt am Container-stdout.
+            - name: LOG_CHANNEL
+              value: {{ .Values.worker.logChannel | quote }}
+            {{- end }}
           {{- with .Values.worker.livenessProbe }}
           livenessProbe:
             {{- toYaml . | nindent 12 }}

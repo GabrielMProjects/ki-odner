@@ -34,6 +34,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 # Eigene PHP-Konfiguration
 COPY docker/php.ini /usr/local/etc/php/conf.d/zz-app.ini
 
+# FPM-Logging: Worker-Output (Laravel) nach stderr
+COPY docker/zz-logging.conf /usr/local/etc/php-fpm.d/zz-logging.conf
+
 # Nginx-Konfiguration (ersetzt die Default-Site)
 COPY docker/nginx.conf /etc/nginx/sites-available/default
 

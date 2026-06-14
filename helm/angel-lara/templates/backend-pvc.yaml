@@ -1,0 +1,20 @@
+{{- if .Values.backend.persistence.enabled }}
+# Geteiltes PVC fuer storage/app/public (Produktbilder), das alle Backend-Replicas
+# gemeinsam nutzen. Damit bleiben Bilder konsistent, auch wenn die HPA hochskaliert.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "angel-lara.backend.fullname" . }}-public
+  labels:
+    {{- include "angel-lara.labels" . | nindent 4 }}
+    app.kubernetes.io/component: backend
+spec:
+  accessModes:
+    - {{ .Values.backend.persistence.accessMode }}
+  {{- if .Values.backend.persistence.storageClassName }}
+  storageClassName: {{ .Values.backend.persistence.storageClassName | quote }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.backend.persistence.size }}
+{{- end }}

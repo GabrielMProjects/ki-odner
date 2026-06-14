@@ -1,0 +1,63 @@
+# Grafana Alloy als DaemonSet: sammelt Pod-Logs (alle Nodes) via Kubernetes-API
+# und pusht sie an Loki. API-basiert (loki.source.kubernetes) -> keine Host-Mounts,
+# robust auf k3s (umgeht die /var/log/pods-Symlink-Problematik).
+controller:
+  type: daemonset
+
+rbac:
+  create: true            # ClusterRole enthaelt pods + pods/log (geprueft)
+serviceAccount:
+  create: true
+
+alloy:
+  resources:
+    requests:
+      cpu: 50m
+      memory: 128Mi
+    limits:
+      memory: 256Mi
+  configMap:
+    content: |-
+      // 1) Pods im Cluster entdecken
+      discovery.kubernetes "pods" {
+        role = "pod"
+      }
+
+      // 2) Aussagekraeftige Loki-Labels setzen
+      discovery.relabel "pod_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+          source_labels = ["__meta_kubernetes_namespace"]
+          target_label  = "namespace"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_name"]
+          target_label  = "pod"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_container_name"]
+          target_label  = "container"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_component"]
+          target_label  = "component"
+        }
+        rule {
+          source_labels = ["__meta_kubernetes_pod_label_app_kubernetes_io_name"]
+          target_label  = "app"
+        }
+      }
+
+      // 3) Pod-Logs lesen (API/Kubelet, inkl. CRI-Parsing)
+      loki.source.kubernetes "pods" {
+        targets    = discovery.relabel.pod_logs.output
+        forward_to = [loki.write.default.receiver]
+      }
+
+      // 4) An Loki pushen
+      loki.write "default" {
+        endpoint {
+          url = "http://loki.observability.svc.cluster.local:3100/loki/api/v1/push"
+        }
+      }

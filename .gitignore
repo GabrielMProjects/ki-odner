@@ -60,3 +60,8 @@ gitleaks-report.json
 Thumbs.db
 .idea/
 .vscode/
+
+# ─── Observability-Demo-Zwischenartefakte (gezielt, nicht global) ────
+docs/k8s-observability-demo.gif
+docs/k8s-observability-demo.webm
+docs/observability-k8s-demo-*.png
