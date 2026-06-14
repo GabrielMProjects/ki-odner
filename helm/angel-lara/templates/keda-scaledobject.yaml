@@ -27,6 +27,14 @@ spec:
       authenticationRef:
         name: {{ include "angel-lara.fullname" . }}-keda-redis-auth
       {{- end }}
+    {{- if (.Values.keda.prometheus | default dict).enabled }}
+    # Prometheus-Scaler (Demo): zusaetzlicher Trigger -> KEDA nimmt das Maximum.
+    - type: prometheus
+      metadata:
+        serverAddress: {{ .Values.keda.prometheus.serverAddress | quote }}
+        query: {{ .Values.keda.prometheus.query | quote }}
+        threshold: {{ .Values.keda.prometheus.threshold | quote }}
+    {{- end }}
 {{- if .Values.secrets.REDIS_PASSWORD }}
 ---
 # Bindet das Redis-Passwort aus dem App-Secret an den KEDA-Trigger.
