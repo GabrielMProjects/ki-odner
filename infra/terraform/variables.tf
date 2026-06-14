@@ -34,6 +34,12 @@ variable "instance_type" {
   default     = "t3.micro"
 }
 
+variable "root_volume_size" {
+  description = "Größe des Root-Volumes (GB) der Compute-Instanz."
+  type        = number
+  default     = 20
+}
+
 # ─── Netzwerk ────────────────────────────────────────────────────────
 variable "vpc_cidr" {
   description = "CIDR-Block der VPC."

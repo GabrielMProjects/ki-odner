@@ -26,6 +26,7 @@ module "compute" {
   name_prefix                 = local.name_prefix
   enable_compute              = var.enable_compute
   instance_type               = var.instance_type
+  root_volume_size            = var.root_volume_size
   vpc_id                      = module.network.vpc_id
   public_subnet_id            = module.network.public_subnet_ids[0]
   allowed_ssh_cidr            = var.allowed_ssh_cidr
