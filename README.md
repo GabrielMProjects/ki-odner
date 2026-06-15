@@ -28,11 +28,7 @@ und dem vollständigen **Observability-Stack**. Stabile URLs über `nip.io` (kei
 
 ### Shop-Demo
 
-![Shop-Demo](docs/demo-shop.gif)
-
-### Shop-Demo (Original)
-
-![Shop-Demo Original](docs/demo.gif)
+![Shop-Demo](docs/demo.gif)
 
 ### Grafana-/Observability-Demo
 
