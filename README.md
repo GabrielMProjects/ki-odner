@@ -32,6 +32,10 @@ und dem vollständigen **Observability-Stack**. Stabile URLs über `nip.io` (kei
 
 ### Grafana-/Observability-Demo
 
+_Vorschau (Standbild) – das animierte GIF läuft darunter:_
+
+![Grafana-/Observability-Vorschau](docs/demo-grafana-preview.png)
+
 ![Grafana-Demo](docs/demo-grafana.gif)
 
 ## 📋 Nachweise / Proofs
