@@ -26,21 +26,15 @@ und dem vollständigen **Observability-Stack**. Stabile URLs über `nip.io` (kei
 
 ## Live-Demo-GIFs
 
-> Auf das Vorschaubild klicken → das GIF klappt **direkt darunter** auf (kein Seitenwechsel).
+Die GIFs laufen direkt hier – automatisch und in Schleife, ohne Klick:
 
 ### Shop-Demo
 
-<details>
-<summary><img src="docs/demo-shop-thumb.png" alt="Shop-Demo abspielen" width="700"></summary>
-<img src="docs/demo.gif" alt="Shop-Demo" width="700">
-</details>
+![Shop-Demo](docs/demo.gif)
 
 ### Grafana-/Observability-Demo
 
-<details>
-<summary><img src="docs/demo-grafana-thumb.png" alt="Grafana-/Observability-Demo abspielen" width="800"></summary>
-<img src="docs/demo-grafana.gif" alt="Grafana-/Observability-Demo" width="800">
-</details>
+![Grafana-/Observability-Demo](docs/demo-grafana.gif)
 
 ## 📋 Nachweise / Proofs
 
