@@ -30,6 +30,10 @@ und dem vollständigen **Observability-Stack**. Stabile URLs über `nip.io` (kei
 
 ![Shop-Demo](docs/demo-shop.gif)
 
+### Shop-Demo (Original)
+
+![Shop-Demo Original](docs/demo.gif)
+
 ### Grafana-/Observability-Demo
 
 ![Grafana-Demo](docs/demo-grafana.gif)
