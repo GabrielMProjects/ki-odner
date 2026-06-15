@@ -4,6 +4,15 @@
 [![IaC](https://img.shields.io/badge/IaC-Terraform-7B42BC?logo=terraform&logoColor=white)](infra/terraform)
 [![Kubernetes](https://img.shields.io/badge/Deploy-Helm_/_k3s-326CE5?logo=kubernetes&logoColor=white)](helm/angel-lara)
 
+**LaraShop** ist ein End-to-End-Portfolioprojekt: ein entkoppeltes **Angular-18-Frontend** und ein
+**Bagisto/Laravel-11-Backend**, das **live auf AWS** (EC2 · k3s · Helm) läuft – mit vollständiger
+Observability (Prometheus, Grafana, Loki, Tempo, OpenTelemetry), echten Backend-/Worker-**Traces**
+und -**Logs**, **Alertmanager**-Alerting und **KEDA**-Autoscaling; Container via Docker/ECR, CI mit
+GitHub Actions, IaC mit Terraform/Ansible.
+
+- **Live bewiesen:** EC2, k3s, Helm, Docker/ECR, CI, Observability, Logs, Traces, Alerting, Autoscaling.
+- **Geplanter Ausbau (nicht live):** RDS, S3, CloudFront, ElastiCache (Terraform-Toggles vorbereitet).
+
 ## 🚀 Live-Demo (AWS · k3s · Helm)
 
 Die Demo läuft auf **einer AWS-EC2-Instanz** (m7i-flex.large, free-tier-fähig) mit **k3s + Helm**
@@ -28,6 +37,7 @@ und dem vollständigen **Observability-Stack**. Stabile URLs über `nip.io` (kei
 | **Architektur** | 📄 | [docs/architecture.md](docs/architecture.md) |
 
 Eine ehrliche Gesamtübersicht steht in der **[Live-Status-Matrix](#live-status-matrix)** unten.
+Detaillierte Beweis-/Screenshot-Liste: **[docs/PROOFS.md](docs/PROOFS.md)**.
 
 ## Live-Status-Matrix
 
@@ -263,13 +273,16 @@ Der **lokale** Compose-Stack (`observability/`) bleibt für die kostenfreie loka
 
 ## Infrastruktur
 
-- **Terraform** (`infra/terraform/`) – Provider/Variablen/Outputs + zwei Module:
+- **Terraform** (`infra/terraform/`) – Provider/Variablen/Outputs + drei Module:
   - **network** – VPC, je 2 öffentliche/private Subnetze, IGW, Route Tables, optionales NAT Gateway.
   - **compute** – **EC2** (Ubuntu; Demo: `m7i-flex.large`, free-tier-fähig) + Security Group (SSH/HTTP/HTTPS, k8s-API 6443
     nicht öffentlich) + Key Pair – **nur** bei `enable_compute=true`.
+  - **ecr** – Container-Registry (backend/frontend) – **nur** bei `enable_ecr=true`.
 - **Ansible** (`ansible/`) – provisioniert die EC2 zu einem **k3s-Node** (Docker, k3s, Helm, UFW).
 - **Helm** (`helm/angel-lara/`) – deployt die Container-Images auf k3s (inkl. Worker/Scheduler/Ingress/HPA/KEDA).
 - **AWS-Deployment** Schritt für Schritt: **[DEPLOYMENT.md](DEPLOYMENT.md)** (mit Kosten-/Free-Tier-Hinweisen).
+- **Geplanter AWS-Ausbau** (RDS/S3/CloudFront/ElastiCache – Toggles vorbereitet, **nicht** live):
+  **[docs/aws-expansion.md](docs/aws-expansion.md)**.
 
 ---
 
