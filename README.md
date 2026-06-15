@@ -24,6 +24,16 @@ und dem vollständigen **Observability-Stack**. Stabile URLs über `nip.io` (kei
 > ⚠️ **Temporäre Demo.** Die Instanz wird bewusst nur zeitweise betrieben und kann abgeschaltet
 > sein (Kosten/Teardown). Architektur, Beweise und Screenshots unten sind unabhängig davon gültig.
 
+## Live-Demo-GIFs
+
+### Shop-Demo
+
+![Shop-Demo](docs/demo-shop.gif)
+
+### Grafana-/Observability-Demo
+
+![Grafana-Demo](docs/demo-grafana.gif)
+
 ## 📋 Nachweise / Proofs
 
 | Nachweis | Status | Umgebung |
